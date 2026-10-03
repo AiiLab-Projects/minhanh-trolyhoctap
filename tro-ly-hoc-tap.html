@@ -1,0 +1,2000 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Trợ lý Học tập</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #eef2f8; --surface: #ffffff; --surface-2: #f7f9fc; --bg-input: #ffffff;
+    --text: #101a2e; --muted: #5c6b84; --border: #dde4ee;
+    --primary: #4f46e5; --primary-2: #7c3aed;
+    --green: #059669; --red: #dc2626;
+    --green-soft: #d9f5e8; --red-soft: #fde4e4;
+    --ring: rgba(79, 70, 229, .35);
+    --radius: 14px;
+    --shadow: 0 8px 24px rgba(23, 43, 99, .07);
+  }
+  html[data-theme="dark"] {
+    --bg: #0b1220; --surface: #131c2e; --surface-2: #1a2438; --bg-input: #0f1829;
+    --text: #e5eaf3; --muted: #8b98ad; --border: #2a3650;
+    --green-soft: rgba(16, 185, 129, .18); --red-soft: rgba(239, 68, 68, .2);
+    --ring: rgba(124, 92, 246, .55);
+    --shadow: 0 10px 30px rgba(0, 0, 0, .35);
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh;
+    transition: background .25s, color .25s;
+  }
+
+  /* ===== Header ===== */
+  .app-header { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; padding: 28px 16px 34px; }
+  .header-inner { max-width: 980px; margin: 0 auto; position: relative; }
+  .app-header h1 { font-size: 28px; }
+  .subtitle { opacity: .85; margin-top: 4px; font-size: 14px; }
+  .icon-btn {
+    position: absolute; right: 0; top: 0; width: 40px; height: 40px; border-radius: 10px;
+    background: rgba(255,255,255,.15); border: none; color: #fff; font-size: 18px; cursor: pointer; transition: .15s;
+  }
+  .icon-btn:hover { background: rgba(255,255,255,.3); }
+
+  /* ===== Tabs ===== */
+  .tabs { max-width: 980px; margin: -24px auto 0; padding: 0 16px; display: flex; gap: 8px; flex-wrap: wrap; position: relative; z-index: 2; }
+  .tab-btn {
+    flex: 1 1 160px; border: 1px solid var(--border); background: var(--surface); color: var(--muted);
+    padding: 12px 10px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer;
+    box-shadow: var(--shadow); transition: .18s;
+  }
+  .tab-btn:hover { color: var(--text); transform: translateY(-1px); }
+  .tab-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+  .container { max-width: 980px; margin: 20px auto 30px; padding: 0 16px; }
+  .hidden { display: none !important; }
+  .app-footer { text-align: center; color: var(--muted); font-size: 13px; padding: 0 16px 30px; }
+
+  /* ===== Card & chung ===== */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); margin-bottom: 18px; }
+  .card h2 { font-size: 16px; margin-bottom: 12px; }
+  .card-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .card-head h2 { margin-bottom: 0; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 760px) { .grid-2 { grid-template-columns: 1fr; } .app-header h1 { font-size: 22px; } }
+
+  input:not([type]), input[type="text"] {
+    width: 100%; padding: 11px 13px; border: 1px solid var(--border); border-radius: 10px;
+    background: var(--bg-input); color: var(--text); font-size: 14px; margin-bottom: 10px; font-family: inherit;
+  }
+  input::placeholder { color: var(--muted); }
+  input:focus { outline: 2px solid var(--ring); border-color: var(--primary); }
+
+  .btn {
+    border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
+    padding: 10px 14px; border-radius: 10px; font-weight: 600; font-size: 14px; cursor: pointer; transition: .15s; font-family: inherit;
+  }
+  .btn:hover { filter: brightness(.96); transform: translateY(-1px); }
+  .btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .btn.success { background: var(--green); border-color: var(--green); color: #fff; }
+  .btn.danger { background: var(--red); border-color: var(--red); color: #fff; }
+  .btn.ghost { background: transparent; }
+  .btn.full { width: 100%; }
+  .btn.big { font-size: 16px; padding: 12px 24px; }
+
+  .list { display: flex; flex-direction: column; gap: 8px; }
+  .row {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
+    border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; background: var(--surface-2);
+  }
+  .row-main { display: flex; flex-direction: column; gap: 2px; min-width: 150px; flex: 1; }
+  .row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .row-actions .btn { padding: 7px 11px; font-size: 13px; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .empty { text-align: center; color: var(--muted); padding: 18px 8px; font-size: 14px; }
+  .editor-grid { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; margin-bottom: 14px; align-items: start; }
+  .editor-grid input { margin-bottom: 0; }
+  @media (max-width: 700px) { .editor-grid { grid-template-columns: 1fr; } }
+
+  /* ===== Thẻ ghi nhớ ===== */
+  .study-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+  .study-head strong { flex: 1; }
+  .flashcard-wrap { max-width: 640px; margin: 0 auto; }
+  .flashcard { perspective: 1200px; height: 260px; cursor: pointer; }
+  .flashcard-inner { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .5s cubic-bezier(.2,.7,.3,1); }
+  .flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+  .flashcard-face {
+    position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    border-radius: 16px; display: flex; align-items: center; justify-content: center; text-align: center;
+    padding: 26px; font-size: 21px; font-weight: 600; word-break: break-word; overflow-wrap: anywhere;
+  }
+  .flashcard-face.front { background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow); color: var(--text); }
+  .flashcard-face.back { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: #fff; transform: rotateY(180deg); }
+  .hint { text-align: center; color: var(--muted); font-size: 13px; margin-top: 10px; }
+  .study-actions { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+
+  /* ===== Trắc nghiệm ===== */
+  .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  @media (max-width: 560px) { .options-grid { grid-template-columns: 1fr; } }
+  .opt { display: flex; align-items: center; gap: 8px; }
+  .opt input { margin-bottom: 0; }
+  .opt input[type="radio"] { width: auto; accent-color: var(--primary); flex-shrink: 0; }
+  .check-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); margin-top: 6px; cursor: pointer; }
+  .check-row input { width: auto; margin: 0; accent-color: var(--primary); }
+  .quiz-card .run-question { font-size: 18px; font-weight: 600; margin-bottom: 14px; }
+  .run-options { display: flex; flex-direction: column; gap: 8px; }
+  .run-option {
+    text-align: left; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--surface-2); color: var(--text); cursor: pointer; font-size: 15px; transition: .15s; font-family: inherit;
+  }
+  .run-option:hover:not(:disabled) { border-color: var(--primary); }
+  .run-option:disabled { cursor: default; }
+  .run-option.correct { background: var(--green-soft); border-color: var(--green); font-weight: 700; }
+  .run-option.wrong { background: var(--red-soft); border-color: var(--red); }
+  .feedback { margin-top: 12px; font-weight: 600; min-height: 22px; }
+  .feedback.ok { color: var(--green); }
+  .feedback.bad { color: var(--red); }
+
+  /* ===== Pomodoro ===== */
+  .pomodoro-card { max-width: 520px; margin: 0 auto; text-align: center; }
+  .mode-btns { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 18px; }
+  .mode-btn.active, .filter-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .timer-wrap { position: relative; width: 260px; height: 260px; margin: 0 auto 16px; }
+  .timer-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .timer-track { fill: none; stroke: var(--border); stroke-width: 12; }
+  .timer-bar { fill: none; stroke: var(--primary); stroke-width: 12; stroke-linecap: round; stroke-dasharray: 691.15; transition: stroke-dashoffset .3s linear; }
+  .timer-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+  #timerText { font-size: 44px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .timer-actions { display: flex; gap: 10px; justify-content: center; }
+
+  /* ===== Việc cần làm ===== */
+  .todo-add { display: flex; gap: 8px; margin-bottom: 12px; }
+  .todo-add input { margin-bottom: 0; flex: 1; }
+  .filter-btns { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .todo-check { width: 20px; height: 20px; accent-color: var(--green); flex-shrink: 0; cursor: pointer; }
+  .todo-text { flex: 1; min-width: 120px; font-size: 14px; }
+  .todo-text.done { text-decoration: line-through; color: var(--muted); }
+  .todo-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; flex-wrap: wrap; gap: 8px; }
+  .progress-track { height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; margin-top: 10px; }
+  .progress-fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--primary), var(--primary-2)); border-radius: 99px; transition: width .3s; }
+
+  /* ===== Môn học ===== */
+  .course-layout { display: grid; grid-template-columns: minmax(210px, .7fr) 1.3fr; gap: 18px; }
+  .file-input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+  .file-label { display: inline-flex; align-items: center; justify-content: center; }
+  .course-editor textarea {
+    width: 100%; min-height: 100px; padding: 11px 13px; border: 1px solid var(--border); border-radius: 10px;
+    background: var(--bg-input); color: var(--text); font: inherit; font-size: 14px; resize: vertical; margin-bottom: 10px;
+  }
+  .course-editor textarea:focus { outline: 2px solid var(--ring); border-color: var(--primary); }
+  .exercise-input {
+    width: 100%; min-height: 100px; padding: 11px 13px; border: 1px solid var(--border); border-radius: 10px;
+    background: var(--bg-input); color: var(--text); font: inherit; font-size: 14px; resize: vertical; margin-bottom: 10px;
+  }
+  .exercise-input:focus, .exercise-select:focus { outline: 2px solid var(--ring); border-color: var(--primary); }
+  .exercise-select {
+    width: 100%; padding: 11px 13px; border: 1px solid var(--border); border-radius: 10px;
+    background: var(--bg-input); color: var(--text); font: inherit; font-size: 14px; margin-bottom: 10px;
+  }
+  .exercise-problem { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.65; }
+  .exercise-result ol { margin: 10px 0 0 22px; line-height: 1.7; }
+  .lesson-content { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.65; font-weight: 400; text-align: left; max-height: 100%; overflow: auto; }
+  .course-review { max-width: 720px; margin: 0 auto; }
+  @media (max-width: 700px) { .course-layout { grid-template-columns: 1fr; } }
+
+  /* ===== Toast ===== */
+  #toast {
+    position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(20px);
+    background: var(--text); color: var(--bg); padding: 11px 18px; border-radius: 10px;
+    font-size: 14px; opacity: 0; pointer-events: none; transition: .25s; z-index: 50; max-width: 90vw;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-inner">
+    <h1>📚 Trợ lý Học tập</h1>
+    <p class="subtitle">Môn học · Ôn tập · Thẻ ghi nhớ · Trắc nghiệm · Pomodoro</p>
+    <button id="themeBtn" class="icon-btn" title="Đổi giao diện sáng/tối">🌙</button>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn" data-tab="tab-courses">📚 Môn học</button>
+  <button class="tab-btn active" data-tab="tab-flashcards">🃏 Thẻ ghi nhớ</button>
+  <button class="tab-btn" data-tab="tab-quiz">📝 Trắc nghiệm</button>
+  <button class="tab-btn" data-tab="tab-exercises">✏️ Bài tập</button>
+  <button class="tab-btn" data-tab="tab-pomodoro">⏱️ Pomodoro</button>
+  <button class="tab-btn" data-tab="tab-todo">✅ Việc cần làm</button>
+</nav>
+
+<main class="container">
+
+  <!-- ============ MÔN HỌC ============ -->
+  <section id="tab-courses" class="tab-panel hidden">
+    <div id="courseHome" class="course-layout">
+      <div>
+        <div class="card">
+          <h2>➕ Tạo môn học</h2>
+          <input id="courseNameInput" placeholder="Tên môn học, ví dụ: Sinh học" />
+          <button id="addCourseBtn" class="btn primary full">Tạo môn học</button>
+          <button id="addCommonCoursesBtn" class="btn full" style="margin-top:8px">Thêm/cập nhật môn & bài mẫu lớp 8</button>
+        </div>
+        <div class="card">
+          <h2>📚 Danh sách môn</h2>
+          <div id="courseList" class="list"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <h2 id="courseDetailTitle">Chọn một môn học</h2>
+          <button id="addSampleLessonsBtn" class="btn hidden">＋ Bài mẫu lớp 8</button>
+          <button id="toggleManualLessonBtn" class="btn hidden">＋ Viết bài</button>
+          <label id="courseUploadLabel" class="btn primary file-label hidden" for="courseFileInput">＋ Gắn tệp</label>
+          <input id="courseFileInput" class="file-input" type="file" accept=".txt,.md,text/plain,text/markdown" />
+        </div>
+        <p id="courseFileHint" class="muted">Bài mẫu tham khảo theo chủ đề lớp 8; một số mục là nội dung tích hợp hoặc liên môn. Cách trình bày có thể khác theo bộ sách.</p>
+        <div id="manualLessonEditor" class="course-editor hidden" style="margin-top:16px">
+          <div class="card-head">
+            <h3>Soạn câu hỏi ôn tập</h3>
+            <button id="closeManualLessonBtn" class="btn ghost" type="button" title="Đóng khung soạn">✕</button>
+          </div>
+          <input id="manualLessonTitle" type="text" placeholder="Tên bài, ví dụ: Phân số bằng nhau" />
+          <input id="manualLessonQuestion" type="text" placeholder="Câu hỏi ôn tập" />
+          <textarea id="manualLessonAnswer" placeholder="Đáp án hoặc ghi chú bài học"></textarea>
+          <button id="saveManualLessonBtn" class="btn primary">Lưu câu hỏi</button>
+        </div>
+        <div id="courseFiles" class="list" style="margin-top:12px"></div>
+      </div>
+    </div>
+    <div id="courseStudy" class="course-review hidden">
+      <div class="study-head">
+        <button id="exitCourseStudyBtn" class="btn ghost">← Thoát</button>
+        <strong id="courseStudyTitle"></strong>
+        <span id="courseStudyProgress" class="muted"></span>
+      </div>
+      <div id="courseLessonCard" class="flashcard" role="button" tabindex="0" aria-label="Lật bài học">
+        <div class="flashcard-inner">
+          <div class="flashcard-face front"><span id="courseLessonTitle"></span></div>
+          <div class="flashcard-face back"><div id="courseLessonContent" class="lesson-content"></div></div>
+        </div>
+      </div>
+      <p class="hint">Bấm vào bài để hiện nội dung · Đánh giá mức độ ghi nhớ sau khi ôn</p>
+      <div class="study-actions">
+        <button id="prevLessonBtn" class="btn">⬅ Trước</button>
+        <button id="unknownLessonBtn" class="btn danger">✗ Chưa nhớ</button>
+        <button id="knownLessonBtn" class="btn success">✓ Đã nhớ</button>
+        <button id="nextLessonBtn" class="btn">Sau ➡</button>
+      </div>
+      <div id="courseStudySummary" class="card hidden"></div>
+    </div>
+  </section>
+
+  <!-- ============ THẺ GHI NHỚ ============ -->
+  <section id="tab-flashcards" class="tab-panel">
+    <div id="fcHome">
+      <div class="grid-2">
+        <div class="card">
+          <h2>➕ Tạo bộ thẻ mới</h2>
+          <input id="deckNameInput" placeholder="Tên bộ thẻ, ví dụ: Từ vựng tiếng Anh" />
+          <button id="addDeckBtn" class="btn primary full">Tạo bộ thẻ</button>
+        </div>
+        <div class="card">
+          <h2>🗂️ Bộ thẻ của bạn</h2>
+          <div id="deckList" class="list"></div>
+        </div>
+      </div>
+
+      <div id="deckEditor" class="card hidden">
+        <div class="card-head">
+          <h2 id="deckEditorTitle">Sửa bộ thẻ</h2>
+          <button id="closeDeckEditor" class="btn ghost">✕ Đóng</button>
+        </div>
+        <div class="editor-grid">
+          <input id="cardFrontInput" placeholder="Mặt trước (câu hỏi / từ khóa)" />
+          <input id="cardBackInput" placeholder="Mặt sau (đáp án / giải nghĩa)" />
+          <button id="addCardBtn" class="btn primary">Thêm thẻ</button>
+        </div>
+        <div id="cardList" class="list"></div>
+      </div>
+    </div>
+
+    <div id="fcStudy" class="hidden">
+      <div class="study-head">
+        <button id="exitStudyBtn" class="btn ghost">← Thoát</button>
+        <strong id="studyDeckName"></strong>
+        <span id="studyProgress" class="muted"></span>
+      </div>
+
+      <div id="studyCardArea">
+        <div class="flashcard-wrap">
+          <div id="flashcard" class="flashcard">
+            <div class="flashcard-inner">
+              <div class="flashcard-face front" id="cardFrontFace"></div>
+              <div class="flashcard-face back" id="cardBackFace"></div>
+            </div>
+          </div>
+          <p class="hint">Bấm vào thẻ để lật · Space: lật · ← / →: chuyển thẻ</p>
+        </div>
+        <div class="study-actions">
+          <button id="prevCardBtn" class="btn">⬅ Trước</button>
+          <button id="unknownBtn" class="btn danger">✗ Chưa nhớ</button>
+          <button id="knownBtn" class="btn success">✓ Đã nhớ</button>
+          <button id="nextCardBtn" class="btn">Sau ➡</button>
+          <button id="shuffleBtn" class="btn ghost">🔀 Xáo trộn</button>
+        </div>
+      </div>
+
+      <div id="studySummary" class="card hidden"></div>
+    </div>
+  </section>
+
+  <!-- ============ TRẮC NGHIỆM ============ -->
+  <section id="tab-quiz" class="tab-panel hidden">
+    <div id="qzHome">
+      <div class="grid-2">
+        <div class="card">
+          <h2>➕ Tạo bài trắc nghiệm</h2>
+          <input id="quizTitleInput" placeholder="Tên bài trắc nghiệm, ví dụ: Toán – Phân số" />
+          <button id="addQuizBtn" class="btn primary full">Tạo bài trắc nghiệm</button>
+          <label class="check-row"><input type="checkbox" id="shuffleQuizChk" /> Xáo trộn thứ tự câu hỏi khi làm bài</label>
+        </div>
+        <div class="card">
+          <h2>📋 Danh sách bài</h2>
+          <div id="quizList" class="list"></div>
+        </div>
+      </div>
+
+      <div id="quizEditor" class="card hidden">
+        <div class="card-head">
+          <h2 id="quizEditorTitle">Thêm câu hỏi</h2>
+          <button id="closeQuizEditor" class="btn ghost">✕ Đóng</button>
+        </div>
+        <input id="questionInput" placeholder="Nội dung câu hỏi" />
+        <div class="options-grid">
+          <label class="opt"><input type="radio" name="correctOpt" value="0" checked /><input id="opt0" placeholder="Đáp án A" /></label>
+          <label class="opt"><input type="radio" name="correctOpt" value="1" /><input id="opt1" placeholder="Đáp án B" /></label>
+          <label class="opt"><input type="radio" name="correctOpt" value="2" /><input id="opt2" placeholder="Đáp án C" /></label>
+          <label class="opt"><input type="radio" name="correctOpt" value="3" /><input id="opt3" placeholder="Đáp án D" /></label>
+        </div>
+        <button id="addQuestionBtn" class="btn primary">Thêm câu hỏi</button>
+        <div id="questionList" class="list" style="margin-top:14px"></div>
+      </div>
+    </div>
+
+    <div id="qzRun" class="hidden">
+      <div class="study-head">
+        <button id="exitQuizBtn" class="btn ghost">← Thoát</button>
+        <strong id="runQuizTitle"></strong>
+        <span id="runProgress" class="muted"></span>
+      </div>
+
+      <div class="card quiz-card" id="quizCardArea">
+        <p id="runQuestion" class="run-question"></p>
+        <div id="runOptions" class="run-options"></div>
+        <p id="runFeedback" class="feedback"></p>
+        <button id="nextQuestionBtn" class="btn primary hidden">Câu tiếp theo ➡</button>
+      </div>
+
+      <div id="runResult" class="card hidden"></div>
+    </div>
+  </section>
+
+  <!-- ============ BÀI TẬP ============ -->
+  <section id="tab-exercises" class="tab-panel hidden">
+    <div id="exerciseHome">
+      <div class="grid-2">
+        <div class="card">
+          <h2>➕ Thêm bài tập</h2>
+          <select id="exerciseCourseSelect" class="exercise-select" aria-label="Môn học">
+            <option value="">Chọn môn học</option>
+          </select>
+          <textarea id="exercisePromptInput" class="exercise-input" placeholder="Nhập đề bài"></textarea>
+          <textarea id="exerciseAnswerInput" class="exercise-input" placeholder="Lời giải tham khảo (không bắt buộc)"></textarea>
+          <button id="addExerciseBtn" class="btn primary full">Lưu bài tập</button>
+        </div>
+        <div class="card">
+          <h2>📋 Bài tập đã lưu</h2>
+          <div id="exerciseList" class="list"></div>
+        </div>
+      </div>
+      <p class="muted" style="margin:0 4px 14px">Bộ giải offline hỗ trợ biểu thức số và phương trình bậc nhất một ẩn, ví dụ: 1/2 + 3/4 hoặc 2x + 3 = 11. Bài khác có thể tự ghi lời giải và xem lời giải tham khảo.</p>
+    </div>
+
+    <div id="exerciseSolve" class="hidden">
+      <div class="study-head">
+        <button id="exitExerciseBtn" class="btn ghost">← Danh sách</button>
+        <strong id="exerciseSolveTitle"></strong>
+      </div>
+      <div class="card">
+        <h2>Đề bài</h2>
+        <p id="exerciseSolvePrompt" class="exercise-problem"></p>
+      </div>
+      <div class="study-actions" style="margin:0 0 16px">
+        <button id="autoSolveExerciseBtn" class="btn primary">🧮 Giải tự động</button>
+        <button id="searchTheoryExerciseBtn" class="btn">📖 Tra lý thuyết</button>
+        <button id="toggleExerciseAnswerBtn" class="btn">Xem lời giải tham khảo</button>
+      </div>
+      <div id="exerciseAutoResult" class="card exercise-result hidden"></div>
+      <div id="exerciseReference" class="card hidden">
+        <h2>Lời giải tham khảo</h2>
+        <textarea id="exerciseReferenceInput" class="exercise-input" placeholder="Nhập bài thơ mẫu, hướng dẫn hoặc lời giải tham khảo"></textarea>
+        <button id="saveExerciseReferenceBtn" class="btn">Lưu lời giải tham khảo</button>
+      </div>
+      <div class="card">
+        <h2>Bài làm của bạn</h2>
+        <textarea id="exerciseWorkInput" class="exercise-input" placeholder="Viết các bước giải hoặc đáp án của bạn"></textarea>
+        <button id="saveExerciseWorkBtn" class="btn">Lưu bài làm</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ POMODORO ============ -->
+  <section id="tab-pomodoro" class="tab-panel hidden">
+    <div class="card pomodoro-card">
+      <div class="mode-btns">
+        <button class="btn mode-btn active" data-mode="focus">🎯 Tập trung 25'</button>
+        <button class="btn mode-btn" data-mode="short">☕ Nghỉ ngắn 5'</button>
+        <button class="btn mode-btn" data-mode="long">🌴 Nghỉ dài 15'</button>
+      </div>
+      <div class="timer-wrap">
+        <svg viewBox="0 0 240 240" class="timer-svg" aria-hidden="true">
+          <circle class="timer-track" cx="120" cy="120" r="110" />
+          <circle class="timer-bar" id="timerBar" cx="120" cy="120" r="110" />
+        </svg>
+        <div class="timer-label">
+          <div id="timerText">25:00</div>
+          <div id="timerMode" class="muted">Tập trung</div>
+        </div>
+      </div>
+      <div class="timer-actions">
+        <button id="startPauseBtn" class="btn primary big">▶ Bắt đầu</button>
+        <button id="resetTimerBtn" class="btn big">↺ Đặt lại</button>
+      </div>
+      <p id="pomStat" class="muted" style="margin-top:14px"></p>
+    </div>
+  </section>
+
+  <!-- ============ VIỆC CẦN LÀM ============ -->
+  <section id="tab-todo" class="tab-panel hidden">
+    <div class="card">
+      <h2>✅ Việc cần làm</h2>
+      <div class="todo-add">
+        <input id="todoInput" placeholder="Thêm việc cần làm, ví dụ: Ôn 20 phút với bộ thẻ ghi nhớ" />
+        <button id="addTodoBtn" class="btn primary">Thêm</button>
+      </div>
+      <div class="filter-btns">
+        <button class="btn filter-btn active" data-filter="all">Tất cả</button>
+        <button class="btn filter-btn" data-filter="active">Còn lại</button>
+        <button class="btn filter-btn" data-filter="done">Hoàn thành</button>
+      </div>
+      <div id="todoList" class="list"></div>
+      <div class="todo-footer">
+        <span id="todoStat" class="muted"></span>
+        <button id="clearDoneBtn" class="btn ghost">🧹 Xóa việc đã xong</button>
+      </div>
+      <div class="progress-track"><div id="todoBar" class="progress-fill"></div></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="app-footer">💾 Dữ liệu được lưu tự động trên trình duyệt của bạn (localStorage) — không cần đăng nhập, dùng được offline.</footer>
+<div id="toast"></div>
+
+<script>
+'use strict';
+
+/* ================= Tiện ích ================= */
+const $  = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function toast(msg) {
+  const t = $('#toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toast._h);
+  toast._h = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+/* ================= Dữ liệu (localStorage) ================= */
+const KEY = 'studytool_v1';
+
+function seed() {
+  return {
+    theme: 'light', pomSessions: 0,
+    courses: [], exercises: [],
+    decks: [{
+      id: uid(), name: 'Từ vựng nhanh (mẫu)', cards: [
+        { id: uid(), front: 'hello',    back: 'xin chào',  known: false },
+        { id: uid(), front: 'study',    back: 'học tập',   known: false },
+        { id: uid(), front: 'tomorrow', back: 'ngày mai',  known: false },
+      ]
+    }],
+    quizzes: [{
+      id: uid(), title: 'Kiến thức chung (mẫu)', questions: [
+        { id: uid(), q: 'Thủ đô của Việt Nam là gì?', options: ['Hà Nội', 'Đà Nẵng', 'Huế', 'Cần Thơ'], answer: 0 },
+        { id: uid(), q: 'Kết quả của 12 × 8 là?',     options: ['86', '96', '106', '108'],             answer: 1 },
+      ]
+    }],
+    todos: [
+      { id: uid(), text: 'Ôn 20 phút với bộ thẻ ghi nhớ', done: false },
+      { id: uid(), text: 'Làm 1 bài trắc nghiệm',          done: false },
+    ]
+  };
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) {
+      const d = JSON.parse(raw);
+      if (d && typeof d === 'object') return d;
+    }
+  } catch (e) {}
+  return seed();
+}
+
+let store = load();
+if (!Array.isArray(store.decks))   store.decks = [];
+if (!Array.isArray(store.quizzes)) store.quizzes = [];
+if (!Array.isArray(store.todos))   store.todos = [];
+if (!Array.isArray(store.courses)) store.courses = [];
+if (!Array.isArray(store.exercises)) store.exercises = [];
+if (store.theme !== 'dark') store.theme = 'light';
+if (typeof store.pomSessions !== 'number') store.pomSessions = 0;
+
+function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); return true; } catch (e) { return false; } }
+
+/* ================= Giao diện sáng / tối ================= */
+function applyTheme() {
+  document.documentElement.dataset.theme = store.theme;
+  $('#themeBtn').textContent = store.theme === 'dark' ? '☀️' : '🌙';
+}
+$('#themeBtn').addEventListener('click', () => {
+  store.theme = store.theme === 'dark' ? 'light' : 'dark';
+  applyTheme(); save();
+});
+
+/* ================= Chuyển tab ================= */
+$$('.tab-btn').forEach(btn => btn.addEventListener('click', () => {
+  $$('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
+  $$('.tab-panel').forEach(p => p.classList.toggle('hidden', p.id !== btn.dataset.tab));
+}));
+
+/* ================= MÔN HỌC & TỆP BÀI HỌC ================= */
+let selectedCourseId = null;
+let courseReview = null;
+
+function renderCourses() {
+  const list = $('#courseList');
+  if (!store.courses.some(c => c.id === selectedCourseId)) selectedCourseId = null;
+  list.innerHTML = store.courses.length ? store.courses.map(c => `
+    <div class="row">
+      <button class="btn ${c.id === selectedCourseId ? 'primary' : 'ghost'}" data-course-select="${c.id}">${esc(c.name)}</button>
+      <span class="muted">${c.files.length} nội dung</span>
+      <button class="btn ghost" data-course-delete="${c.id}" title="Xóa môn học">🗑️</button>
+    </div>`).join('') : '<div class="empty">Chưa có môn học. Tạo môn đầu tiên để bắt đầu.</div>';
+
+  const course = store.courses.find(c => c.id === selectedCourseId);
+  $('#courseDetailTitle').textContent = course ? course.name : 'Chọn một môn học';
+  $('#courseUploadLabel').classList.toggle('hidden', !course);
+  $('#toggleManualLessonBtn').classList.toggle('hidden', !course);
+  const sampleFile = course?.files.find(f => f.kind === 'sample');
+  $('#addSampleLessonsBtn').classList.toggle('hidden', !course || !getSamplePack(course.name) || sampleFile?.version === SAMPLE_VERSION);
+  $('#manualLessonEditor').classList.toggle('hidden', !course || $('#manualLessonEditor').dataset.open !== 'true');
+  const files = $('#courseFiles');
+  if (!course) {
+    files.innerHTML = '';
+    $('#courseFileHint').textContent = 'Bài mẫu tham khảo theo chủ đề lớp 8; một số mục là nội dung tích hợp hoặc liên môn. Cách trình bày có thể khác theo bộ sách.';
+    renderExercises();
+    return;
+  }
+  $('#courseFileHint').textContent = 'Bài mẫu tham khảo theo chủ đề lớp 8; một số mục là nội dung tích hợp hoặc liên môn. Bạn cũng có thể gắn tệp TXT/Markdown tối đa 1 MB.';
+  files.innerHTML = course.files.length ? course.files.map(f => `
+    <div class="row">
+      <div class="row-main"><strong>${esc(f.name)}</strong><span class="muted">${f.kind === 'sample' ? 'Lớp 8 · tham khảo · ' : f.kind === 'manual' ? 'Câu hỏi tự soạn · ' : ''}${f.lessons.length}${f.kind === 'manual' ? ' câu hỏi' : ' bài'}${f.kind === 'sample' || f.kind === 'manual' ? '' : ` · ${(f.size / 1024).toFixed(1)} KB`}</span></div>
+      <div class="row-actions">
+        <button class="btn primary" data-file-study="${f.id}">Ôn bài</button>
+        <button class="btn ghost" data-file-delete="${f.id}" title="Gỡ tệp">🗑️</button>
+      </div>
+    </div>`).join('') : '<div class="empty">Môn học chưa có bài. Thêm bài mẫu lớp 8, tự soạn câu hỏi hoặc gắn tệp TXT/Markdown.</div>';
+  renderExercises();
+}
+
+function addCourse() {
+  const name = $('#courseNameInput').value.trim();
+  if (!name) return toast('Hãy nhập tên môn học');
+  const course = { id: uid(), name, files: [] };
+  store.courses.unshift(course);
+  selectedCourseId = course.id;
+  $('#courseNameInput').value = '';
+  save(); renderCourses();
+}
+$('#addCourseBtn').addEventListener('click', addCourse);
+$('#toggleManualLessonBtn').addEventListener('click', () => {
+  const editor = $('#manualLessonEditor');
+  editor.dataset.open = 'true';
+  editor.classList.remove('hidden');
+  $('#manualLessonTitle').focus();
+});
+
+function closeManualLessonEditor() {
+  const editor = $('#manualLessonEditor');
+  editor.dataset.open = 'false';
+  editor.classList.add('hidden');
+  $('#manualLessonTitle').value = '';
+  $('#manualLessonQuestion').value = '';
+  $('#manualLessonAnswer').value = '';
+}
+$('#closeManualLessonBtn').addEventListener('click', closeManualLessonEditor);
+$('#saveManualLessonBtn').addEventListener('click', () => {
+  const course = store.courses.find(c => c.id === selectedCourseId);
+  if (!course) return toast('Hãy chọn môn học trước');
+  const title = $('#manualLessonTitle').value.trim();
+  const question = $('#manualLessonQuestion').value.trim();
+  const content = $('#manualLessonAnswer').value.trim();
+  if (!title || !question || !content) return toast('Hãy nhập đủ tên bài, câu hỏi và đáp án');
+
+  let manualFile = course.files.find(file => file.kind === 'manual');
+  const isNewFile = !manualFile;
+  if (isNewFile) {
+    manualFile = { id: uid(), name: 'Bài tự soạn', kind: 'manual', size: 0, lessons: [] };
+    course.files.unshift(manualFile);
+  }
+  const lesson = { id: uid(), title, question, content, known: false };
+  manualFile.lessons.push(lesson);
+  if (!save()) {
+    manualFile.lessons.pop();
+    if (isNewFile) course.files.shift();
+    return toast('Không đủ dung lượng lưu câu hỏi');
+  }
+  $('#manualLessonQuestion').value = '';
+  $('#manualLessonAnswer').value = '';
+  renderCourses();
+  $('#manualLessonQuestion').focus();
+  toast('Đã lưu câu hỏi vào bài tự soạn');
+});
+const COMMON_COURSES = [
+  'Tiếng Việt', 'Toán', 'Đạo đức', 'Tự nhiên và Xã hội', 'Khoa học',
+  'Lịch sử và Địa lý', 'Ngữ văn', 'Tiếng Anh', 'Khoa học tự nhiên',
+  'Lịch sử', 'Địa lý', 'Vật lý', 'Hóa học', 'Sinh học', 'Tin học',
+  'Công nghệ', 'Giáo dục công dân', 'Giáo dục kinh tế và pháp luật',
+  'Giáo dục thể chất', 'Âm nhạc', 'Mỹ thuật',
+  'Hoạt động trải nghiệm và hướng nghiệp', 'Giáo dục địa phương'
+];
+const SAMPLE_LESSONS = new Map(Object.entries({
+  'Tiếng Việt': [
+    ['Đọc để tìm ý chính', 'Đọc toàn bài một lượt để nắm chủ đề. Sau đó chú ý câu mở đầu, từ ngữ được lặp lại và các chi tiết hỗ trợ. Tóm tắt ý chính bằng một câu của em.'],
+    ['Dấu chấm và dấu phẩy', 'Dấu chấm kết thúc một câu trọn ý. Dấu phẩy thường ngăn cách các thành phần trong câu hoặc các ý liệt kê. Khi đọc, dừng nhẹ ở dấu phẩy và dừng rõ ở dấu chấm.']
+  ],
+  'Toán': [
+    ['Phân số bằng nhau', 'Nhân hoặc chia cả tử số và mẫu số cho cùng một số khác 0 thì được phân số bằng phân số ban đầu. Ví dụ: 1/2 = 2/4. Muốn so sánh hai phân số, có thể quy đồng mẫu số rồi so sánh tử số.'],
+    ['Tỉ số phần trăm', 'Phần trăm biểu thị số phần trong 100 phần bằng nhau. Đổi phân số sang phần trăm bằng cách nhân với 100%. Ví dụ: 1/4 = 25%. Khi tính phần trăm của một lượng, đổi phần trăm thành số thập phân rồi nhân với lượng đó.']
+  ],
+  'Đạo đức': [
+    ['Tôn trọng sự khác biệt', 'Mỗi người có sở thích, khả năng và hoàn cảnh riêng. Lắng nghe, không chế giễu và trao đổi lịch sự giúp mọi người cùng tham gia. Tôn trọng khác biệt không có nghĩa là đồng ý với hành vi gây hại.'],
+    ['Giữ lời hứa', 'Trước khi hứa, hãy cân nhắc xem mình có thể thực hiện hay không. Nếu gặp trở ngại, cần báo sớm, giải thích trung thực và cùng tìm cách khắc phục.']
+  ],
+  'Tự nhiên và Xã hội': [
+    ['Nhu cầu của thực vật', 'Thực vật cần nước, ánh sáng, không khí và chất khoáng để sống. Rễ hút nước và chất khoáng; lá thường nhận ánh sáng và trao đổi khí. Quan sát cây ở các điều kiện khác nhau để nhận biết ảnh hưởng của môi trường.'],
+    ['Giữ gìn vệ sinh cá nhân', 'Rửa tay bằng xà phòng trước khi ăn và sau khi đi vệ sinh giúp loại bỏ nhiều tác nhân gây bệnh. Ăn uống đủ chất, ngủ đủ và vận động đều đặn góp phần bảo vệ sức khỏe.']
+  ],
+  'Khoa học': [
+    ['Vòng tuần hoàn của nước', 'Nhiệt làm nước bốc hơi; hơi nước gặp lạnh ngưng tụ thành giọt nhỏ trong mây. Khi giọt nước đủ lớn, chúng rơi xuống thành mưa hoặc tuyết. Nước chảy ra sông, hồ rồi tiếp tục tuần hoàn.'],
+    ['Năng lượng quanh ta', 'Năng lượng có thể làm vật chuyển động, phát sáng, phát nhiệt hoặc tạo âm thanh. Năng lượng có nhiều dạng như điện, ánh sáng, nhiệt và hóa năng. Sử dụng điện an toàn và tiết kiệm giúp giảm lãng phí.']
+  ],
+  'Lịch sử và Địa lý': [
+    ['Dòng thời gian lịch sử', 'Dòng thời gian sắp xếp sự kiện theo thứ tự trước sau. Mốc thời gian giúp xác định một sự kiện xảy ra khi nào, nhưng cần thêm tư liệu để hiểu nguyên nhân và ý nghĩa của sự kiện.'],
+    ['Đọc bản đồ cơ bản', 'Tên bản đồ cho biết khu vực hoặc chủ đề được thể hiện. Chú giải giải thích ký hiệu; phương hướng giúp xác định vị trí tương đối. Tỉ lệ bản đồ cho biết khoảng cách trên bản đồ tương ứng với khoảng cách ngoài thực tế.']
+  ],
+  'Ngữ văn': [
+    ['Chủ đề và chi tiết trong văn bản', 'Chủ đề là vấn đề hoặc ý tưởng chính mà văn bản thể hiện. Chi tiết, hình ảnh và hành động của nhân vật góp phần làm rõ chủ đề. Khi phân tích, hãy trích dẫn chi tiết rồi giải thích nó cho thấy điều gì.'],
+    ['So sánh và nhân hóa', 'So sánh đặt hai sự vật bên cạnh nhau để làm nổi bật điểm tương đồng, thường có từ như “như”, “tựa”. Nhân hóa dùng cách gọi hoặc hành động của con người cho sự vật, giúp cách diễn đạt sinh động hơn.']
+  ],
+  'Tiếng Anh': [
+    ['Present simple', 'Thì hiện tại đơn thường diễn tả thói quen, sự thật chung hoặc lịch trình. Với he, she, it, động từ thường thêm -s hoặc -es. Câu hỏi và câu phủ định thường dùng do/does, ví dụ: Does she read every day?'],
+    ['Hỏi và trả lời thông tin', 'Các từ hỏi cơ bản gồm what (điều gì), where (ở đâu), when (khi nào), who (ai) và why (vì sao). Hãy nghe từ hỏi để biết cần cung cấp loại thông tin nào, rồi trả lời bằng một câu đủ ý.']
+  ],
+  'Khoa học tự nhiên': [
+    ['Quan sát và kiểm chứng', 'Một điều tra khoa học bắt đầu bằng câu hỏi có thể kiểm tra. Nêu dự đoán, xác định yếu tố thay đổi và yếu tố cần giữ nguyên, sau đó ghi lại kết quả. Kết luận cần dựa trên dữ liệu thu được.'],
+    ['Chất và sự biến đổi', 'Chất có thể tồn tại ở thể rắn, lỏng hoặc khí. Nóng lên hay lạnh đi có thể làm chất chuyển thể. Trong biến đổi vật lý, chất vẫn giữ thành phần; phản ứng hóa học tạo ra chất mới.']
+  ],
+  'Lịch sử': [
+    ['Sử dụng tư liệu lịch sử', 'Tư liệu lịch sử có thể là văn bản, hiện vật, hình ảnh hoặc lời kể. Cần xem xét ai tạo ra tư liệu, vào thời điểm nào và với mục đích gì. Đối chiếu nhiều nguồn giúp nhận định đáng tin cậy hơn.'],
+    ['Nguyên nhân và kết quả', 'Khi học một sự kiện, phân biệt nguyên nhân lâu dài với nguyên nhân trực tiếp, rồi xác định kết quả trước mắt và ảnh hưởng lâu dài. Trình bày theo quan hệ thời gian giúp lập luận rõ ràng.']
+  ],
+  'Địa lý': [
+    ['Thời tiết và khí hậu', 'Thời tiết mô tả trạng thái khí quyển trong thời gian ngắn tại một nơi. Khí hậu là đặc điểm thời tiết lặp lại trong thời gian dài. Nhiệt độ, lượng mưa và gió là những yếu tố thường được quan sát.'],
+    ['Tọa độ địa lý', 'Vĩ tuyến chạy theo hướng đông-tây và cho biết vị trí bắc hoặc nam so với Xích đạo. Kinh tuyến nối hai cực và cho biết vị trí đông hoặc tây so với kinh tuyến gốc. Kết hợp vĩ độ và kinh độ để xác định vị trí.']
+  ],
+  'Vật lý': [
+    ['Lực và chuyển động', 'Lực có thể làm thay đổi tốc độ, hướng chuyển động hoặc hình dạng của vật. Một vật có thể chịu nhiều lực cùng lúc; nếu các lực cân bằng, chuyển động không đổi. Ma sát thường cản trở chuyển động giữa hai bề mặt tiếp xúc.'],
+    ['Mạch điện đơn giản', 'Mạch điện cần nguồn điện, dây dẫn và thiết bị sử dụng điện tạo thành đường kín. Công tắc đóng cho dòng điện đi qua; công tắc mở làm mạch hở. Không chạm vào dây điện hoặc nguồn điện nguy hiểm.']
+  ],
+  'Hóa học': [
+    ['Nguyên tử và nguyên tố', 'Nguyên tử gồm hạt nhân và các electron. Số proton trong hạt nhân xác định nguyên tố hóa học. Bảng tuần hoàn sắp xếp các nguyên tố theo số hiệu nguyên tử và thể hiện một số quy luật về tính chất.'],
+    ['Dấu hiệu phản ứng hóa học', 'Phản ứng hóa học biến đổi chất ban đầu thành chất mới. Một số dấu hiệu có thể quan sát gồm khí thoát ra, kết tủa xuất hiện, đổi màu hoặc thay đổi nhiệt độ. Cần dựa trên bằng chứng, không chỉ một dấu hiệu đơn lẻ.']
+  ],
+  'Sinh học': [
+    ['Tế bào là đơn vị sống', 'Tế bào là đơn vị cấu tạo và hoạt động cơ bản của cơ thể sống. Màng tế bào bao bọc và trao đổi chất; tế bào chất là nơi diễn ra nhiều hoạt động; tế bào thực vật thường có thành tế bào và lục lạp.'],
+    ['Quang hợp ở thực vật', 'Trong quang hợp, cây dùng năng lượng ánh sáng để tạo chất hữu cơ từ nước và khí carbon dioxide, đồng thời giải phóng oxygen. Quá trình này diễn ra chủ yếu ở lá có diệp lục và góp phần duy trì nguồn thức ăn trong hệ sinh thái.']
+  ],
+  'Tin học': [
+    ['Thuật toán và chương trình', 'Thuật toán là dãy bước rõ ràng để giải quyết một nhiệm vụ. Chương trình biểu diễn thuật toán bằng ngôn ngữ máy tính. Chia vấn đề thành bước nhỏ, kiểm tra dữ liệu vào và thử nhiều trường hợp giúp tìm lỗi.'],
+    ['An toàn tài khoản', 'Dùng mật khẩu dài, riêng cho từng dịch vụ và bật xác thực nhiều bước khi có thể. Không chia sẻ mã xác minh, hạn chế mở liên kết đáng ngờ và đăng xuất khỏi thiết bị dùng chung.']
+  ],
+  'Công nghệ': [
+    ['Quy trình thiết kế', 'Quy trình thiết kế thường gồm xác định nhu cầu, đề xuất ý tưởng, làm mẫu, thử nghiệm và cải tiến. Tiêu chí an toàn, vật liệu, chi phí và tác động môi trường cần được cân nhắc từ đầu.'],
+    ['Sử dụng dụng cụ an toàn', 'Đọc hướng dẫn trước khi dùng dụng cụ, chọn đúng dụng cụ cho công việc và giữ khu vực thao tác gọn gàng. Tắt nguồn thiết bị sau khi sử dụng; nhờ người lớn hỗ trợ với dụng cụ sắc hoặc thiết bị điện.']
+  ],
+  'Giáo dục công dân': [
+    ['Quyền đi cùng trách nhiệm', 'Mỗi người có các quyền được pháp luật bảo vệ và đồng thời cần thực hiện trách nhiệm của mình. Khi quyền lợi bị ảnh hưởng, hãy tìm hiểu quy định và trao đổi với người có trách nhiệm thay vì tự ý gây tổn hại cho người khác.'],
+    ['Tôn trọng pháp luật', 'Pháp luật đặt ra quy tắc chung để bảo vệ trật tự và quyền lợi hợp pháp. Tìm hiểu quy định liên quan, thực hiện đúng và chịu trách nhiệm khi vi phạm là những biểu hiện của ý thức công dân.']
+  ],
+  'Giáo dục kinh tế và pháp luật': [
+    ['Lập kế hoạch chi tiêu', 'Ghi lại khoản thu và khoản chi giúp biết tiền đang được sử dụng vào đâu. Có thể ưu tiên nhu cầu cần thiết, đặt giới hạn cho khoản muốn có và dành một phần để tiết kiệm. Điều chỉnh kế hoạch khi hoàn cảnh thay đổi.'],
+    ['Cung và cầu', 'Cung là lượng hàng hóa người bán sẵn sàng cung cấp; cầu là lượng người mua muốn và có khả năng mua. Khi các yếu tố khác không đổi, cung hoặc cầu thay đổi có thể tạo áp lực làm giá thị trường biến động.']
+  ],
+  'Giáo dục thể chất': [
+    ['Khởi động và hồi tĩnh', 'Khởi động bằng vận động nhẹ và động tác phù hợp giúp cơ thể chuẩn bị cho hoạt động chính. Sau khi tập, giảm cường độ từ từ và thả lỏng. Dừng tập nếu đau bất thường hoặc chóng mặt và báo cho người hướng dẫn.'],
+    ['Nguyên tắc tập luyện', 'Tăng thời lượng và độ khó từ từ, chọn bài tập phù hợp thể trạng và dành thời gian nghỉ ngơi. Uống nước theo nhu cầu, thực hiện đúng kỹ thuật và ưu tiên an toàn hơn thành tích.']
+  ],
+  'Âm nhạc': [
+    ['Nhịp và phách', 'Phách là đơn vị nhịp đều khi trình diễn âm nhạc. Nhịp nhóm các phách theo chu kỳ, thường có phách mạnh và phách nhẹ. Vỗ tay đều theo phách giúp giữ nhịp khi hát hoặc chơi nhạc cụ.'],
+    ['Cao độ và trường độ', 'Cao độ cho biết âm thanh trầm hay bổng; trường độ cho biết âm thanh ngân dài hay ngắn. Khi luyện nghe, tập trung vào từng đặc điểm riêng trước rồi kết hợp chúng để nhận ra giai điệu.']
+  ],
+  'Mỹ thuật': [
+    ['Màu sắc nóng và lạnh', 'Đỏ, cam và vàng thường tạo cảm giác ấm; xanh lam và xanh lục thường tạo cảm giác mát. Cảm nhận còn phụ thuộc màu đặt cạnh nhau và nội dung tranh. Dùng tương phản màu để làm nổi bật điểm chính.'],
+    ['Bố cục hình ảnh', 'Bố cục là cách sắp xếp hình, màu và khoảng trống trong tác phẩm. Xác định điểm nhấn trước, sau đó cân bằng các phần còn lại. Thử phác nhiều phương án nhỏ giúp chọn bố cục rõ ràng hơn.']
+  ],
+  'Hoạt động trải nghiệm và hướng nghiệp': [
+    ['Đặt mục tiêu học tập', 'Mục tiêu rõ ràng nên cụ thể, có thể kiểm tra và có thời hạn. Chia mục tiêu lớn thành việc nhỏ theo tuần, theo dõi tiến độ và điều chỉnh khi kế hoạch chưa phù hợp.'],
+    ['Khám phá nghề nghiệp', 'Tìm hiểu nhiệm vụ hằng ngày, kỹ năng cần có và môi trường làm việc của nghề. So sánh thông tin từ nhiều nguồn đáng tin cậy, đồng thời xem xét sở thích và điểm mạnh của bản thân.']
+  ],
+  'Giáo dục địa phương': [
+    ['Tìm hiểu di sản địa phương', 'Ghi nhận tên di sản, địa điểm, câu chuyện hình thành và vai trò của di sản với cộng đồng. Hỏi người am hiểu và đối chiếu tư liệu để tránh truyền lại thông tin sai. Tôn trọng quy định khi tham quan.'],
+    ['Môi trường nơi em sống', 'Quan sát một vấn đề cụ thể như rác thải, nguồn nước hoặc cây xanh. Ghi lại địa điểm, thời điểm và ảnh hưởng; sau đó đề xuất việc làm vừa sức như phân loại rác hoặc giữ gìn không gian chung.']
+  ]
+}).map(([name, lessons]) => [name.toLocaleLowerCase('vi'), lessons]));
+
+const SAMPLE_VERSION = 3;
+const GRADE_8_SAMPLE_LESSONS = new Map(Object.entries({
+  'Tiếng Việt': [
+    ['Từ tượng hình và từ tượng thanh', 'Từ tượng hình và từ tượng thanh khác nhau thế nào? Cho mỗi loại một ví dụ.', 'Từ tượng hình gợi dáng vẻ hoặc trạng thái, ví dụ: lom khom. Từ tượng thanh mô phỏng âm thanh, ví dụ: róc rách. Chọn từ phù hợp giúp câu văn gợi hình, gợi âm hơn.'],
+    ['Trợ từ và thán từ', 'Trong câu “Chính Lan đã hoàn thành bài”, từ “chính” có tác dụng gì?', '“Chính” là trợ từ dùng để nhấn mạnh Lan là người hoàn thành bài. Thán từ thường dùng để bộc lộ cảm xúc hoặc gọi đáp, như “ôi”, “này”.']
+  ],
+  'Toán': [
+    ['Hằng đẳng thức đáng nhớ', 'Khai triển (x + 3)² theo hằng đẳng thức nào?', 'Dùng (a + b)² = a² + 2ab + b². Vậy (x + 3)² = x² + 6x + 9.'],
+    ['Định lý Pythagore', 'Tam giác vuông có hai cạnh góc vuông dài 6 cm và 8 cm. Cạnh huyền dài bao nhiêu?', 'Theo định lý Pythagore, c² = 6² + 8² = 100, nên cạnh huyền c = 10 cm.']
+  ],
+  'Đạo đức': [
+    ['Tôn trọng sự thật', 'Khi phát hiện mình đưa thông tin sai trong bài làm nhóm, em nên làm gì?', 'Chủ động đính chính, nói rõ thông tin đúng và cùng nhóm sửa sản phẩm. Tôn trọng sự thật giúp người khác tin cậy và giúp quyết định dựa trên thông tin chính xác.'],
+    ['Trách nhiệm với cộng đồng', 'Nêu hai việc học sinh lớp 8 có thể làm để bảo vệ môi trường ở trường.', 'Có thể phân loại rác đúng nơi và tiết kiệm điện, nước. Việc làm cần duy trì thường xuyên, phù hợp khả năng và không gây nguy hiểm.']
+  ],
+  'Tự nhiên và Xã hội': [
+    ['Hệ tiêu hóa ở người', 'Thức ăn được biến đổi và hấp thụ chủ yếu ở cơ quan nào?', 'Thức ăn được tiêu hóa qua nhiều cơ quan; phần lớn chất dinh dưỡng được hấp thụ ở ruột non nhờ diện tích hấp thụ lớn. Đây là nội dung cơ thể người trong Khoa học tự nhiên lớp 8.'],
+    ['Bảo vệ hệ hô hấp', 'Vì sao nên tránh khói thuốc và bụi mịn?', 'Khói thuốc và bụi có thể kích ứng, làm tổn thương đường hô hấp và ảnh hưởng trao đổi khí. Nên tránh nguồn khói bụi, giữ không gian thông thoáng và dùng bảo hộ phù hợp.']
+  ],
+  'Khoa học': [
+    ['Phản ứng hóa học', 'Dấu hiệu nào cho thấy có thể đã xảy ra phản ứng hóa học?', 'Có thể quan sát thấy khí thoát ra, chất kết tủa xuất hiện, đổi màu hoặc nhiệt độ thay đổi. Cần xem xét các dấu hiệu cùng điều kiện thí nghiệm; không kết luận chỉ từ một dấu hiệu đơn lẻ.'],
+    ['Áp suất', 'Vì sao dao sắc cắt vật dễ hơn dao cùn khi tác dụng lực như nhau?', 'Áp suất p = F/S. Lưỡi dao sắc có diện tích tiếp xúc nhỏ hơn nên tạo áp suất lớn hơn khi lực không đổi. Đây là ví dụ tích hợp kiến thức Vật lý lớp 8.']
+  ],
+  'Lịch sử và Địa lý': [
+    ['Việt Nam cuối thế kỉ XIX', 'Phong trào Cần Vương gắn với sự kiện và lời kêu gọi nào?', 'Phong trào gắn với chiếu Cần Vương năm 1885, kêu gọi văn thân và nhân dân giúp vua chống thực dân Pháp. Các cuộc khởi nghĩa diễn ra ở nhiều địa phương.'],
+    ['Khí hậu Việt Nam', 'Gió mùa làm cho khí hậu Việt Nam có đặc điểm nổi bật nào?', 'Gió mùa làm hướng gió và thời tiết thay đổi theo mùa. Kết hợp vị trí nhiệt đới và địa hình, khí hậu nước ta nhìn chung nóng ẩm, mưa nhiều nhưng phân hóa theo vùng và độ cao.']
+  ],
+  'Ngữ văn': [
+    ['Luận điểm và bằng chứng', 'Một đoạn văn nghị luận thuyết phục cần liên kết luận điểm với bằng chứng như thế nào?', 'Luận điểm nêu ý kiến chính; lý lẽ giải thích vì sao ý kiến hợp lý; bằng chứng cụ thể làm cơ sở cho lý lẽ. Sau khi đưa bằng chứng, cần phân tích để chỉ ra nó hỗ trợ luận điểm ra sao.'],
+    ['Phân tích nhân vật', 'Khi nhận xét nhân vật truyện, vì sao cần dựa vào hành động và lời nói?', 'Hành động, lời nói, suy nghĩ và quan hệ với nhân vật khác là chi tiết làm căn cứ nhận xét. Kết hợp các chi tiết trong hoàn cảnh truyện giúp tránh đánh giá nhân vật chỉ từ một biểu hiện.']
+  ],
+  'Tiếng Anh': [
+    ['Past continuous', 'Hoàn thành câu: “I ___ (read) when the phone rang.”', 'Đáp án: “I was reading when the phone rang.” Dùng quá khứ tiếp diễn cho hành động đang diễn ra thì một hành động khác xen vào; hành động xen vào thường dùng quá khứ đơn.'],
+    ['First conditional', 'Cấu trúc câu điều kiện loại 1 dùng để nói về điều gì?', 'Cấu trúc cơ bản: If + hiện tại đơn, will + động từ nguyên mẫu. Dùng để nói về một khả năng có thể xảy ra và kết quả tương lai, ví dụ: “If it rains, we will stay home.”']
+  ],
+  'Khoa học tự nhiên': [
+    ['Bảo toàn khối lượng', 'Trong phản ứng hóa học kín, tổng khối lượng trước và sau phản ứng thay đổi thế nào?', 'Tổng khối lượng các chất tham gia bằng tổng khối lượng các sản phẩm trong hệ kín. Các nguyên tử được sắp xếp lại chứ không tự sinh ra hoặc mất đi.'],
+    ['Dòng điện và an toàn', 'Nêu một quy tắc an toàn khi làm việc với mạch điện học tập.', 'Chỉ sử dụng nguồn điện thấp áp theo hướng dẫn, không chạm dây trần và ngắt nguồn trước khi thay đổi mạch. Báo giáo viên nếu thiết bị nóng bất thường hoặc dây bị hở.']
+  ],
+  'Lịch sử': [
+    ['Chiếu Cần Vương', 'Chiếu Cần Vương được ban bố năm nào và nhằm mục đích gì?', 'Chiếu được ban bố năm 1885, kêu gọi phò vua Hàm Nghi và chống sự xâm lược của thực dân Pháp. Đây là bối cảnh của nhiều cuộc khởi nghĩa cuối thế kỉ XIX.'],
+    ['Nguyễn Tất Thành ra đi tìm đường cứu nước', 'Nguyễn Tất Thành rời Việt Nam năm 1911 từ đâu?', 'Ngày 5-6-1911, Nguyễn Tất Thành rời Bến Nhà Rồng, bắt đầu hành trình tìm con đường giải phóng dân tộc. Khi học sự kiện, cần phân biệt mốc thời gian, địa điểm và ý nghĩa.']
+  ],
+  'Địa lý': [
+    ['Địa hình Việt Nam', 'Địa hình đồi núi ảnh hưởng thế nào đến sông ngòi?', 'Địa hình dốc làm nhiều sông ngắn, chảy nhanh và có tiềm năng thủy điện; mùa mưa có thể xuất hiện lũ nhanh. Tác động cụ thể còn phụ thuộc lượng mưa và đặc điểm từng lưu vực.'],
+    ['Sông ngòi và mùa mưa', 'Vì sao lưu lượng nhiều sông ở Việt Nam thay đổi theo mùa?', 'Lượng mưa phân bố không đều trong năm nên nước sông thường dâng vào mùa mưa và giảm vào mùa khô. Rừng, hồ chứa và địa hình cũng ảnh hưởng dòng chảy.']
+  ],
+  'Vật lý': [
+    ['Áp suất chất rắn', 'Một vật tạo lực 200 N trên diện tích 0,02 m². Áp suất là bao nhiêu?', 'Dùng p = F/S: p = 200/0,02 = 10.000 Pa. Với cùng lực, giảm diện tích tiếp xúc sẽ làm áp suất tăng.'],
+    ['Truyền nhiệt', 'Nhiệt truyền tự nhiên theo chiều nào giữa hai vật có nhiệt độ khác nhau?', 'Nhiệt truyền từ vật có nhiệt độ cao sang vật có nhiệt độ thấp cho đến khi cân bằng nhiệt. Ba hình thức thường học là dẫn nhiệt, đối lưu và bức xạ nhiệt.']
+  ],
+  'Hóa học': [
+    ['Dấu hiệu phản ứng hóa học', 'Phản ứng giữa giấm và baking soda thường tạo ra khí nào?', 'Phản ứng tạo khí carbon dioxide (CO₂), có thể quan sát qua bọt khí. Muốn xác định sản phẩm cần xét chất tham gia và phương trình phản ứng, không chỉ dựa vào hiện tượng.'],
+    ['Định luật bảo toàn khối lượng', 'Nếu 12 g carbon phản ứng vừa đủ với 32 g oxygen, khối lượng carbon dioxide tạo thành là bao nhiêu?', 'Trong hệ kín, khối lượng sản phẩm bằng tổng khối lượng chất tham gia: 12 + 32 = 44 g CO₂.']
+  ],
+  'Sinh học': [
+    ['Tiêu hóa và hấp thụ', 'Phần lớn chất dinh dưỡng được hấp thụ ở đâu trong ống tiêu hóa?', 'Phần lớn chất dinh dưỡng được hấp thụ qua thành ruột non vào máu hoặc bạch huyết. Nếp gấp và lông ruột làm tăng diện tích tiếp xúc để hấp thụ hiệu quả.'],
+    ['Tuần hoàn máu', 'Tim có vai trò gì trong hệ tuần hoàn?', 'Tim co bóp tạo lực đẩy máu lưu thông trong mạch. Máu vận chuyển oxygen, chất dinh dưỡng và các chất khác đến mô, đồng thời đưa một số chất thải đến cơ quan xử lý.']
+  ],
+  'Tin học': [
+    ['Thuật toán có rẽ nhánh', 'Trong thuật toán, khi nào cần dùng cấu trúc rẽ nhánh?', 'Dùng rẽ nhánh khi các bước tiếp theo phụ thuộc vào một điều kiện đúng hoặc sai. Ví dụ: nếu điểm từ 5 trở lên thì thông báo “đạt”, nếu không thì thông báo “chưa đạt”.'],
+    ['Địa chỉ ô trong bảng tính', 'Trong bảng tính, công thức =B2*C2 thực hiện phép tính gì?', 'Công thức nhân giá trị ở ô B2 với giá trị ở ô C2. Dấu “=” mở đầu công thức; địa chỉ ô giúp công thức lấy dữ liệu từ bảng.']
+  ],
+  'Công nghệ': [
+    ['Bản vẽ kỹ thuật', 'Hình chiếu vuông góc giúp thể hiện vật thể như thế nào?', 'Các hình chiếu biểu diễn vật thể trên những mặt phẳng nhìn khác nhau, thường giúp xác định hình dạng và kích thước. Cần đọc đúng hướng chiếu và quan hệ giữa các hình chiếu.'],
+    ['An toàn điện trong gia đình', 'Cần làm gì trước khi kiểm tra hoặc thay thiết bị điện?', 'Ngắt nguồn điện trước, dùng thiết bị đúng hướng dẫn và giữ tay cùng khu vực làm việc khô ráo. Không tự sửa dây điện hoặc thiết bị đang có điện; nhờ người lớn hay thợ chuyên môn hỗ trợ.']
+  ],
+  'Giáo dục công dân': [
+    ['Bảo vệ môi trường và tài nguyên', 'Nêu một hành động cụ thể góp phần bảo vệ tài nguyên thiên nhiên ở địa phương.', 'Có thể tiết kiệm nước, không xả rác xuống sông hoặc tham gia trồng và chăm sóc cây. Hành động nên phù hợp điều kiện địa phương và tuân thủ quy định chung.'],
+    ['Phòng chống bạo lực học đường', 'Nếu chứng kiến bạn bị bắt nạt, học sinh nên làm gì để hỗ trợ an toàn?', 'Không cổ vũ hoặc phát tán hình ảnh. Báo cho giáo viên, người lớn đáng tin cậy; nếu an toàn, ở cạnh bạn bị ảnh hưởng và khuyến khích bạn tìm hỗ trợ.']
+  ],
+  'Giáo dục kinh tế và pháp luật': [
+    ['Kế hoạch chi tiêu cá nhân', 'Vì sao nên ghi lại các khoản thu và chi trong tuần?', 'Ghi chép giúp biết tiền được dùng vào đâu, nhận ra khoản chưa cần thiết và điều chỉnh kế hoạch. Nên ưu tiên nhu cầu thiết yếu, đặt giới hạn chi và dành một phần tiết kiệm.'],
+    ['Quyền sở hữu tài sản', 'Nhặt được đồ của người khác ở trường thì nên xử lý thế nào?', 'Không tự ý giữ hoặc sử dụng. Hãy giao cho giáo viên, văn phòng hoặc người phụ trách để tìm chủ sở hữu. Tôn trọng tài sản của người khác là trách nhiệm trong đời sống và pháp luật.']
+  ],
+  'Giáo dục thể chất': [
+    ['Khởi động trước khi tập', 'Khởi động có tác dụng gì và nên bắt đầu ra sao?', 'Khởi động giúp cơ thể tăng dần mức hoạt động và chuẩn bị cho bài tập. Bắt đầu bằng vận động nhẹ, sau đó làm động tác phù hợp môn học; dừng nếu thấy đau hoặc chóng mặt.'],
+    ['Nguyên tắc tăng tải', 'Vì sao không nên tăng cường độ tập luyện đột ngột?', 'Cơ thể cần thời gian thích nghi. Tăng cường độ quá nhanh có thể làm tăng nguy cơ chấn thương và quá sức. Nên tiến triển từ từ, nghỉ ngơi đủ và tập đúng kỹ thuật.']
+  ],
+  'Âm nhạc': [
+    ['Nhịp 2/4 và nhịp 3/4', 'Trong nhịp 3/4 có bao nhiêu phách trong mỗi ô nhịp?', 'Có ba phách trong mỗi ô nhịp; phách thứ nhất thường được nhấn mạnh. Khi luyện, đếm đều “một-hai-ba” theo tốc độ của bản nhạc.'],
+    ['Trường độ nốt nhạc', 'Trong cùng một nhịp, nốt trắng thường dài gấp mấy lần nốt đen?', 'Nốt trắng thường có trường độ bằng hai nốt đen. Trường độ thực tế còn phụ thuộc số chỉ nhịp và tốc độ trình diễn.']
+  ],
+  'Mỹ thuật': [
+    ['Phối cảnh một điểm tụ', 'Trong phối cảnh một điểm tụ, các đường song song đi sâu vào tranh hướng về đâu?', 'Các đường song song với hướng nhìn thường hội tụ về một điểm tụ trên đường chân trời. Điểm tụ giúp tạo cảm giác chiều sâu cho không gian.'],
+    ['Tương phản màu sắc', 'Muốn làm một chi tiết nổi bật, có thể dùng tương phản màu như thế nào?', 'Đặt màu có độ sáng hoặc sắc độ khác biệt quanh chi tiết để tạo điểm nhấn. Cần cân bằng toàn bộ bảng màu để điểm nhấn rõ mà không làm tranh rối.']
+  ],
+  'Hoạt động trải nghiệm và hướng nghiệp': [
+    ['Đặt mục tiêu học tập', 'Một mục tiêu tuần có thể đo lường nên được viết như thế nào?', 'Nêu việc cụ thể, số lượng hoặc thời hạn, ví dụ: hoàn thành 10 bài luyện phương trình trước tối thứ Sáu. Sau đó theo dõi tiến độ và điều chỉnh khi có trở ngại.'],
+    ['Tìm hiểu nghề nghiệp', 'Khi tìm hiểu một nghề, nên xem xét những thông tin nào?', 'Tìm hiểu nhiệm vụ hằng ngày, kỹ năng cần có, môi trường làm việc và con đường học tập. So sánh nhiều nguồn đáng tin cậy, rồi liên hệ với sở thích và điểm mạnh của bản thân.']
+  ],
+  'Giáo dục địa phương': [
+    ['Di sản tại địa phương', 'Nêu hai nguồn có thể dùng để kiểm chứng thông tin về một di tích địa phương.', 'Có thể đối chiếu hồ sơ hoặc ấn phẩm của cơ quan văn hóa với tư liệu tại bảo tàng, thư viện hay lời kể của người am hiểu. Ghi rõ nguồn và phân biệt tư liệu với truyền thuyết.'],
+    ['Vấn đề môi trường địa phương', 'Muốn đề xuất giải pháp cho một vấn đề rác thải, em cần thu thập dữ liệu gì?', 'Ghi nhận loại rác, địa điểm, thời điểm và mức độ xuất hiện; hỏi người liên quan và tìm hiểu cách thu gom hiện tại. Dữ liệu cụ thể giúp đề xuất giải pháp khả thi hơn.']
+  ]
+}).map(([name, lessons]) => [name.toLocaleLowerCase('vi'), lessons]));
+
+function getSamplePack(courseName) {
+  return GRADE_8_SAMPLE_LESSONS.get(courseName.trim().toLocaleLowerCase('vi')) || null;
+}
+
+function createSampleFile(courseName) {
+  const pack = getSamplePack(courseName);
+  if (!pack) return null;
+  return {
+    id: uid(), name: 'Bài mẫu lớp 8', kind: 'sample', size: 0, version: SAMPLE_VERSION,
+    lessons: pack.map(([title, question, content]) => ({ id: uid(), title, question, content, known: false }))
+  };
+}
+
+function ensureSampleFile(course) {
+  const updated = createSampleFile(course.name);
+  if (!updated) return false;
+  const existing = course.files.find(file => file.kind === 'sample');
+  if (!existing) {
+    course.files.unshift(updated);
+    return true;
+  }
+  if (existing.version === SAMPLE_VERSION) return false;
+  const knownByTitle = new Map(existing.lessons.map(lesson => [lesson.title, lesson.known]));
+  updated.lessons.forEach(lesson => { lesson.known = knownByTitle.get(lesson.title) || false; });
+  course.files[course.files.indexOf(existing)] = updated;
+  return true;
+}
+
+$('#addSampleLessonsBtn').addEventListener('click', () => {
+  const course = store.courses.find(c => c.id === selectedCourseId);
+  if (!course || !ensureSampleFile(course)) return;
+  save(); renderCourses();
+  toast('Đã cập nhật bài mẫu lớp 8');
+});
+$('#addCommonCoursesBtn').addEventListener('click', () => {
+  let addedCourses = 0;
+  let addedPacks = 0;
+  const added = [];
+  COMMON_COURSES.forEach(name => {
+    const normalizedName = name.toLocaleLowerCase('vi');
+    let course = store.courses.find(item => item.name.trim().toLocaleLowerCase('vi') === normalizedName);
+    if (!course) {
+      course = { id: uid(), name, files: [] };
+      added.push(course);
+      addedCourses++;
+    }
+    if (ensureSampleFile(course)) addedPacks++;
+  });
+  store.courses.unshift(...added);
+  if (added.length) selectedCourseId = added[0].id;
+  else if (!store.courses.some(course => course.id === selectedCourseId)) selectedCourseId = store.courses[0]?.id || null;
+  save(); renderCourses();
+  toast(addedCourses || addedPacks ? `Đã thêm ${addedCourses} môn, cập nhật bài lớp 8 cho ${addedPacks} môn` : 'Các môn và bài mẫu lớp 8 đã có sẵn');
+});
+$('#courseList').addEventListener('click', e => {
+  const select = e.target.closest('[data-course-select]');
+  const del = e.target.closest('[data-course-delete]');
+  if (select) {
+    if (selectedCourseId !== select.dataset.courseSelect) closeManualLessonEditor();
+    selectedCourseId = select.dataset.courseSelect;
+    renderCourses();
+  }
+  if (del) {
+    const course = store.courses.find(c => c.id === del.dataset.courseDelete);
+    if (!course || !confirm(`Xóa môn học "${course.name}" cùng các tệp đã gắn?`)) return;
+    if (selectedCourseId === course.id) closeManualLessonEditor();
+    store.courses = store.courses.filter(c => c.id !== course.id);
+    store.exercises = store.exercises.filter(exercise => exercise.courseId !== course.id);
+    save(); renderCourses();
+  }
+});
+
+function splitLessons(text) {
+  const lines = text.replace(/\r\n?/g, '\n').split('\n');
+  const hasHeadings = lines.some(line => /^#{1,6}\s+\S/.test(line.trim()));
+  let lessons = [];
+  if (hasHeadings) {
+    let current = null;
+    lines.forEach(line => {
+      const heading = line.trim().match(/^#{1,6}\s+(.+)$/);
+      if (heading) {
+        if (current && current.content.trim()) lessons.push(current);
+        current = { title: heading[1].trim(), content: '' };
+      } else if (current) current.content += `${line}\n`;
+      else if (line.trim()) {
+        current = { title: 'Mở đầu', content: `${line}\n` };
+      }
+    });
+    if (current && current.content.trim()) lessons.push(current);
+  } else {
+    lessons = text.trim().split(/\n\s*\n/).map((content, index) => ({
+      title: `Bài ${index + 1}`, content: content.trim()
+    })).filter(lesson => lesson.content);
+  }
+  return lessons.map(lesson => ({ ...lesson, id: uid(), known: false }));
+}
+
+$('#courseFileInput').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  const course = store.courses.find(c => c.id === selectedCourseId);
+  if (!course) return toast('Hãy chọn môn học trước');
+  if (file.size > 1024 * 1024) return toast('Tệp vượt quá giới hạn 1 MB');
+  if (!/\.(txt|md)$/i.test(file.name)) return toast('Chỉ hỗ trợ tệp .txt và .md');
+  try {
+    const text = await file.text();
+    const lessons = splitLessons(text);
+    if (!lessons.length) return toast('Tệp chưa có nội dung để tạo bài học');
+    const attachment = { id: uid(), name: file.name, size: file.size, lessons };
+    course.files.unshift(attachment);
+    if (!save()) {
+      course.files.shift();
+      return toast('Không đủ dung lượng lưu tệp trong trình duyệt');
+    }
+    renderCourses();
+    toast(`Đã gắn tệp và tạo ${lessons.length} bài học`);
+  } catch (error) {
+    toast('Không đọc được tệp này');
+  }
+});
+
+$('#courseFiles').addEventListener('click', e => {
+  const studyBtn = e.target.closest('[data-file-study]');
+  const del = e.target.closest('[data-file-delete]');
+  const course = store.courses.find(c => c.id === selectedCourseId);
+  if (!course) return;
+  if (studyBtn) startCourseReview(course, studyBtn.dataset.fileStudy);
+  if (del) {
+    course.files = course.files.filter(f => f.id !== del.dataset.fileDelete);
+    save(); renderCourses();
+  }
+});
+
+function startCourseReview(course, fileId) {
+  const file = course.files.find(f => f.id === fileId);
+  if (!file || !file.lessons.length) return toast('Tệp chưa có bài học để ôn');
+  courseReview = { courseId: course.id, fileId, index: 0, known: new Set() };
+  $('#courseHome').classList.add('hidden');
+  $('#courseStudy').classList.remove('hidden');
+  $('#courseStudySummary').classList.add('hidden');
+  $('#courseLessonCard').classList.remove('hidden');
+  $('#courseStudyTitle').textContent = `${course.name} · ${file.name}`;
+  renderCourseLesson();
+}
+
+function activeCourseFile() {
+  const course = store.courses.find(c => c.id === courseReview?.courseId);
+  return { course, file: course?.files.find(f => f.id === courseReview?.fileId) };
+}
+
+function renderCourseLesson() {
+  const { file } = activeCourseFile();
+  if (!file || !courseReview) return exitCourseReview();
+  const lesson = file.lessons[courseReview.index];
+  $('#courseStudyProgress').textContent = `Bài ${courseReview.index + 1}/${file.lessons.length} · Đã nhớ lượt này: ${courseReview.known.size}`;
+  $('#courseLessonTitle').textContent = lesson.question || lesson.title;
+  $('#courseLessonContent').textContent = lesson.question ? `${lesson.title}\n\n${lesson.content}` : lesson.content;
+  $('#courseLessonCard').classList.remove('flipped');
+}
+
+function moveCourseLesson(step) {
+  const { file } = activeCourseFile();
+  if (!file || !courseReview) return;
+  const next = courseReview.index + step;
+  if (next < 0) return;
+  if (next >= file.lessons.length) return finishCourseReview();
+  courseReview.index = next;
+  renderCourseLesson();
+}
+$('#prevLessonBtn').addEventListener('click', () => moveCourseLesson(-1));
+$('#nextLessonBtn').addEventListener('click', () => moveCourseLesson(1));
+$('#courseLessonCard').addEventListener('click', () => $('#courseLessonCard').classList.toggle('flipped'));
+$('#courseLessonCard').addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('#courseLessonCard').classList.toggle('flipped'); }
+});
+
+function rateCourseLesson(known) {
+  const { file } = activeCourseFile();
+  if (!file || !courseReview) return;
+  const lesson = file.lessons[courseReview.index];
+  lesson.known = known;
+  if (known) courseReview.known.add(lesson.id);
+  else courseReview.known.delete(lesson.id);
+  save();
+  moveCourseLesson(1);
+}
+$('#knownLessonBtn').addEventListener('click', () => rateCourseLesson(true));
+$('#unknownLessonBtn').addEventListener('click', () => rateCourseLesson(false));
+
+function finishCourseReview() {
+  const { course, file } = activeCourseFile();
+  if (!course || !file) return exitCourseReview();
+  $('#courseLessonCard').classList.add('hidden');
+  $('#courseStudySummary').classList.remove('hidden');
+  $('#courseStudySummary').innerHTML = `<h2>🎉 Đã ôn xong ${esc(file.name)}</h2>
+    <p style="margin-top:6px">Bạn đánh dấu đã nhớ <strong>${courseReview.known.size}/${file.lessons.length}</strong> bài trong lượt này.</p>
+    <div class="study-actions"><button class="btn primary" data-course-again>Ôn lại</button><button class="btn" data-course-home>Về môn học</button></div>`;
+}
+$('#courseStudySummary').addEventListener('click', e => {
+  if (e.target.closest('[data-course-again]') && courseReview) startCourseReview(activeCourseFile().course, courseReview.fileId);
+  if (e.target.closest('[data-course-home]')) exitCourseReview();
+});
+
+function exitCourseReview() {
+  courseReview = null;
+  $('#courseStudy').classList.add('hidden');
+  $('#courseHome').classList.remove('hidden');
+  renderCourses();
+}
+$('#exitCourseStudyBtn').addEventListener('click', exitCourseReview);
+
+/* ================= THẺ GHI NHỚ ================= */
+let editDeckId = null;
+let study = null; // { deckId, order:[cardId], idx, known }
+
+function renderDecks() {
+  const list = $('#deckList');
+  if (!store.decks.length) {
+    list.innerHTML = '<div class="empty">Chưa có bộ thẻ nào. Hãy tạo bộ đầu tiên nhé! 🚀</div>';
+    return;
+  }
+  list.innerHTML = store.decks.map(d => {
+    const known = d.cards.filter(c => c.known).length;
+    return `<div class="row">
+      <div class="row-main"><strong>${esc(d.name)}</strong><span class="muted">${d.cards.length} thẻ · ${known} đã nhớ</span></div>
+      <div class="row-actions">
+        <button class="btn primary" data-act="study" data-id="${d.id}">Học ngay</button>
+        <button class="btn" data-act="editDeck" data-id="${d.id}">Sửa thẻ</button>
+        <button class="btn ghost" data-act="delDeck" data-id="${d.id}" title="Xóa bộ thẻ">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+$('#deckList').addEventListener('click', e => {
+  const b = e.target.closest('[data-act]');
+  if (!b) return;
+  const id = b.dataset.id;
+  if (b.dataset.act === 'study') startStudy(id);
+  if (b.dataset.act === 'editDeck') openDeckEditor(id);
+  if (b.dataset.act === 'delDeck') {
+    const d = store.decks.find(x => x.id === id);
+    if (d && confirm(`Xóa bộ thẻ "${d.name}"?`)) {
+      store.decks = store.decks.filter(x => x.id !== id);
+      if (editDeckId === id) closeDeckEditor();
+      save(); renderDecks(); toast('Đã xóa bộ thẻ');
+    }
+  }
+});
+
+function addDeck() {
+  const name = $('#deckNameInput').value.trim();
+  if (!name) return toast('Hãy nhập tên bộ thẻ');
+  store.decks.unshift({ id: uid(), name, cards: [] });
+  $('#deckNameInput').value = '';
+  save(); renderDecks();
+  openDeckEditor(store.decks[0].id);
+  toast('Đã tạo bộ thẻ — thêm thẻ ngay bên dưới');
+}
+$('#addDeckBtn').addEventListener('click', addDeck);
+
+function openDeckEditor(id) {
+  const d = store.decks.find(x => x.id === id);
+  if (!d) return;
+  editDeckId = id;
+  $('#deckEditor').classList.remove('hidden');
+  $('#deckEditorTitle').textContent = `✏️ ${d.name}`;
+  renderCardList();
+  $('#cardFrontInput').focus();
+}
+function closeDeckEditor() {
+  editDeckId = null;
+  $('#deckEditor').classList.add('hidden');
+}
+$('#closeDeckEditor').addEventListener('click', closeDeckEditor);
+
+function renderCardList() {
+  const d = store.decks.find(x => x.id === editDeckId);
+  if (!d) return;
+  const list = $('#cardList');
+  if (!d.cards.length) {
+    list.innerHTML = '<div class="empty">Bộ thẻ còn trống — thêm thẻ đầu tiên ở trên.</div>';
+    return;
+  }
+  list.innerHTML = d.cards.map((c, i) => `<div class="row">
+    <div class="row-main"><strong>${esc(c.front)}</strong><span class="muted">${esc(c.back)}</span></div>
+    <div class="row-actions"><button class="btn ghost" data-i="${i}" title="Xóa thẻ">🗑️</button></div>
+  </div>`).join('');
+}
+$('#cardList').addEventListener('click', e => {
+  const b = e.target.closest('button[data-i]');
+  if (!b) return;
+  const d = store.decks.find(x => x.id === editDeckId);
+  if (!d) return;
+  d.cards.splice(+b.dataset.i, 1);
+  save(); renderCardList(); renderDecks();
+});
+
+function addCard() {
+  const d = store.decks.find(x => x.id === editDeckId);
+  if (!d) return toast('Hãy chọn một bộ thẻ để thêm thẻ');
+  const f = $('#cardFrontInput').value.trim();
+  const b = $('#cardBackInput').value.trim();
+  if (!f || !b) return toast('Hãy nhập đủ mặt trước và mặt sau');
+  d.cards.push({ id: uid(), front: f, back: b, known: false });
+  $('#cardFrontInput').value = '';
+  $('#cardBackInput').value = '';
+  save(); renderCardList(); renderDecks();
+  $('#cardFrontInput').focus();
+}
+$('#addCardBtn').addEventListener('click', addCard);
+
+/* --- Chế độ học --- */
+function startStudy(deckId) {
+  const d = store.decks.find(x => x.id === deckId);
+  if (!d) return;
+  if (!d.cards.length) return toast('Bộ thẻ còn trống, hãy thêm thẻ trước nhé');
+  study = { deckId, order: d.cards.map(c => c.id), idx: 0, known: 0 };
+  $('#fcHome').classList.add('hidden');
+  $('#fcStudy').classList.remove('hidden');
+  $('#studyDeckName').textContent = d.name;
+  renderStudy();
+}
+function exitStudy() {
+  study = null;
+  $('#fcStudy').classList.add('hidden');
+  $('#fcHome').classList.remove('hidden');
+  $('#studySummary').classList.add('hidden');
+  renderDecks();
+}
+$('#exitStudyBtn').addEventListener('click', exitStudy);
+
+function currentCard() {
+  const d = store.decks.find(x => x.id === study.deckId);
+  if (!d) return null;
+  const id = study.order[study.idx];
+  return d.cards.find(c => c.id === id) || null;
+}
+
+function renderStudy() {
+  const c = currentCard();
+  if (!c) return showStudySummary();
+  $('#studyCardArea').classList.remove('hidden');
+  $('#studySummary').classList.add('hidden');
+  $('#studyProgress').textContent = `Thẻ ${study.idx + 1}/${study.order.length} · Đã nhớ: ${study.known}`;
+  $('#cardFrontFace').textContent = c.front;
+  $('#cardBackFace').textContent = c.back;
+  $('#flashcard').classList.remove('flipped');
+}
+
+function flipCard() { if (study) $('#flashcard').classList.toggle('flipped'); }
+$('#flashcard').addEventListener('click', flipCard);
+
+function nextCard() {
+  if (!study) return;
+  if (study.idx >= study.order.length - 1) return showStudySummary();
+  study.idx++; renderStudy();
+}
+function prevCard() {
+  if (!study || study.idx === 0) return;
+  study.idx--; renderStudy();
+}
+$('#nextCardBtn').addEventListener('click', nextCard);
+$('#prevCardBtn').addEventListener('click', prevCard);
+
+$('#shuffleBtn').addEventListener('click', () => {
+  if (!study) return;
+  shuffleArr(study.order);
+  study.idx = 0;
+  renderStudy();
+  toast('Đã xáo trộn các thẻ 🔀');
+});
+
+function markCard(known) {
+  if (!study) return;
+  const c = currentCard();
+  if (!c) return;
+  const d = store.decks.find(x => x.id === study.deckId);
+  const card = d.cards.find(x => x.id === c.id);
+  if (card) {
+    if (known && !card.known) study.known++;
+    card.known = known;
+    save();
+  }
+  nextCard();
+}
+$('#knownBtn').addEventListener('click', () => markCard(true));
+$('#unknownBtn').addEventListener('click', () => markCard(false));
+
+function showStudySummary() {
+  const total = study.order.length;
+  const d = store.decks.find(x => x.id === study.deckId);
+  $('#studyCardArea').classList.add('hidden');
+  $('#studySummary').classList.remove('hidden');
+  $('#studySummary').innerHTML = `
+    <h2>🎉 Hoàn thành bộ "${esc(d ? d.name : '')}"</h2>
+    <p style="margin-top:6px">Lượt này bạn đã nhớ <strong>${study.known}/${total}</strong> thẻ.</p>
+    <div class="study-actions">
+      <button class="btn primary" data-sact="again">🔄 Học lại</button>
+      <button class="btn" data-sact="home">Về danh sách</button>
+    </div>`;
+}
+$('#studySummary').addEventListener('click', e => {
+  const b = e.target.closest('[data-sact]');
+  if (!b) return;
+  if (b.dataset.sact === 'again') { study.idx = 0; study.known = 0; renderStudy(); }
+  if (b.dataset.sact === 'home') exitStudy();
+});
+
+document.addEventListener('keydown', e => {
+  if (!study || $('#fcStudy').classList.contains('hidden')) return;
+  if (['INPUT', 'TEXTAREA', 'BUTTON'].includes(e.target.tagName)) return;
+  if (e.code === 'Space') { e.preventDefault(); flipCard(); }
+  else if (e.key === 'ArrowRight') nextCard();
+  else if (e.key === 'ArrowLeft') prevCard();
+});
+
+/* ================= TRẮC NGHIỆM ================= */
+let editQuizId = null;
+let run = null; // { quizId, order:[qId], idx, score, answered }
+
+function renderQuizzes() {
+  const list = $('#quizList');
+  if (!store.quizzes.length) {
+    list.innerHTML = '<div class="empty">Chưa có bài trắc nghiệm nào. Tạo bài đầu tiên nhé! 📝</div>';
+    return;
+  }
+  list.innerHTML = store.quizzes.map(q => `<div class="row">
+    <div class="row-main"><strong>${esc(q.title)}</strong><span class="muted">${q.questions.length} câu hỏi</span></div>
+    <div class="row-actions">
+      <button class="btn primary" data-act="run" data-id="${q.id}">Làm bài</button>
+      <button class="btn" data-act="editQz" data-id="${q.id}">Quản lý câu hỏi</button>
+      <button class="btn ghost" data-act="delQz" data-id="${q.id}" title="Xóa bài">🗑️</button>
+    </div>
+  </div>`).join('');
+}
+
+$('#quizList').addEventListener('click', e => {
+  const b = e.target.closest('[data-act]');
+  if (!b) return;
+  const id = b.dataset.id;
+  if (b.dataset.act === 'run') startQuizRun(id);
+  if (b.dataset.act === 'editQz') openQuizEditor(id);
+  if (b.dataset.act === 'delQz') {
+    const q = store.quizzes.find(x => x.id === id);
+    if (q && confirm(`Xóa bài "${q.title}"?`)) {
+      store.quizzes = store.quizzes.filter(x => x.id !== id);
+      if (editQuizId === id) closeQuizEditor();
+      save(); renderQuizzes(); toast('Đã xóa bài trắc nghiệm');
+    }
+  }
+});
+
+function addQuiz() {
+  const t = $('#quizTitleInput').value.trim();
+  if (!t) return toast('Hãy nhập tên bài trắc nghiệm');
+  store.quizzes.unshift({ id: uid(), title: t, questions: [] });
+  $('#quizTitleInput').value = '';
+  save(); renderQuizzes();
+  openQuizEditor(store.quizzes[0].id);
+  toast('Đã tạo bài — thêm câu hỏi ngay bên dưới');
+}
+$('#addQuizBtn').addEventListener('click', addQuiz);
+
+function openQuizEditor(id) {
+  const q = store.quizzes.find(x => x.id === id);
+  if (!q) return;
+  editQuizId = id;
+  $('#quizEditor').classList.remove('hidden');
+  $('#quizEditorTitle').textContent = `✏️ ${q.title}`;
+  renderQuestionList();
+}
+function closeQuizEditor() {
+  editQuizId = null;
+  $('#quizEditor').classList.add('hidden');
+}
+$('#closeQuizEditor').addEventListener('click', closeQuizEditor);
+
+function renderQuestionList() {
+  const q = store.quizzes.find(x => x.id === editQuizId);
+  if (!q) return;
+  const list = $('#questionList');
+  const labels = ['A', 'B', 'C', 'D'];
+  if (!q.questions.length) {
+    list.innerHTML = '<div class="empty">Chưa có câu hỏi nào — thêm câu hỏi đầu tiên ở trên.</div>';
+    return;
+  }
+  list.innerHTML = q.questions.map((item, i) => `<div class="row">
+    <div class="row-main">
+      <strong>${i + 1}. ${esc(item.q)}</strong>
+      <span class="muted">${item.options.map((o, oi) => `${labels[oi]}. ${esc(o)}${oi === item.answer ? ' ✔' : ''}`).join(' · ')}</span>
+    </div>
+    <div class="row-actions"><button class="btn ghost" data-i="${i}" title="Xóa câu hỏi">🗑️</button></div>
+  </div>`).join('');
+}
+$('#questionList').addEventListener('click', e => {
+  const b = e.target.closest('button[data-i]');
+  if (!b) return;
+  const q = store.quizzes.find(x => x.id === editQuizId);
+  if (!q) return;
+  q.questions.splice(+b.dataset.i, 1);
+  save(); renderQuestionList(); renderQuizzes();
+});
+
+function addQuestion() {
+  const q = store.quizzes.find(x => x.id === editQuizId);
+  if (!q) return toast('Hãy chọn một bài trắc nghiệm trước');
+  const text = $('#questionInput').value.trim();
+  const opts = [0, 1, 2, 3].map(i => $(`#opt${i}`).value.trim());
+  const ans = +document.querySelector('input[name="correctOpt"]:checked').value;
+  if (!text) return toast('Hãy nhập nội dung câu hỏi');
+  if (opts.some(o => !o)) return toast('Hãy nhập đủ 4 đáp án');
+  q.questions.push({ id: uid(), q: text, options: opts, answer: ans });
+  $('#questionInput').value = '';
+  [0, 1, 2, 3].forEach(i => $(`#opt${i}`).value = '');
+  document.querySelector('input[name="correctOpt"][value="0"]').checked = true;
+  save(); renderQuestionList(); renderQuizzes();
+  $('#questionInput').focus();
+  toast('Đã thêm câu hỏi');
+}
+$('#addQuestionBtn').addEventListener('click', addQuestion);
+
+/* --- Làm bài --- */
+function startQuizRun(id) {
+  const q = store.quizzes.find(x => x.id === id);
+  if (!q) return;
+  if (!q.questions.length) return toast('Bài này chưa có câu hỏi nào');
+  let order = q.questions.map(x => x.id);
+  if ($('#shuffleQuizChk').checked) shuffleArr(order);
+  run = { quizId: id, order, idx: 0, score: 0, answered: false };
+  closeQuizEditor();
+  $('#qzHome').classList.add('hidden');
+  $('#qzRun').classList.remove('hidden');
+  $('#runQuizTitle').textContent = q.title;
+  renderRun();
+}
+function exitQuizRun() {
+  run = null;
+  $('#qzRun').classList.add('hidden');
+  $('#qzHome').classList.remove('hidden');
+  $('#runResult').classList.add('hidden');
+  renderQuizzes();
+}
+$('#exitQuizBtn').addEventListener('click', exitQuizRun);
+
+function renderRun() {
+  const q = store.quizzes.find(x => x.id === run.quizId);
+  const item = q.questions.find(x => x.id === run.order[run.idx]);
+  if (!item) return showRunResult();
+  $('#quizCardArea').classList.remove('hidden');
+  $('#runResult').classList.add('hidden');
+  $('#runProgress').textContent = `Câu ${run.idx + 1}/${run.order.length} · Đúng: ${run.score}`;
+  $('#runQuestion').textContent = item.q;
+  const labels = ['A', 'B', 'C', 'D'];
+  $('#runOptions').innerHTML = item.options.map((o, i) =>
+    `<button class="run-option" data-i="${i}">${labels[i]}. ${esc(o)}</button>`).join('');
+  const fb = $('#runFeedback');
+  fb.textContent = ''; fb.className = 'feedback';
+  $('#nextQuestionBtn').classList.add('hidden');
+}
+
+$('#runOptions').addEventListener('click', e => {
+  const b = e.target.closest('.run-option');
+  if (!b || !run || run.answered) return;
+  run.answered = true;
+  const q = store.quizzes.find(x => x.id === run.quizId);
+  const item = q.questions.find(x => x.id === run.order[run.idx]);
+  const picked = +b.dataset.i;
+  const buttons = $$('#runOptions .run-option');
+  buttons.forEach(btn => { btn.disabled = true; });
+  const fb = $('#runFeedback');
+  if (picked === item.answer) {
+    run.score++;
+    b.classList.add('correct');
+    fb.textContent = '🎉 Chính xác!';
+    fb.classList.add('ok');
+  } else {
+    b.classList.add('wrong');
+    const ok = buttons.find(btn => +btn.dataset.i === item.answer);
+    if (ok) ok.classList.add('correct');
+    fb.textContent = `❌ Sai rồi! Đáp án đúng: ${'ABCD'[item.answer]}`;
+    fb.classList.add('bad');
+  }
+  const last = run.idx === run.order.length - 1;
+  $('#nextQuestionBtn').textContent = last ? '🏁 Xem kết quả' : 'Câu tiếp theo ➡';
+  $('#nextQuestionBtn').classList.remove('hidden');
+});
+
+$('#nextQuestionBtn').addEventListener('click', () => {
+  if (!run) return;
+  if (run.idx >= run.order.length - 1) return showRunResult();
+  run.idx++;
+  run.answered = false;
+  renderRun();
+});
+
+function showRunResult() {
+  const q = store.quizzes.find(x => x.id === run.quizId);
+  const total = run.order.length;
+  const pct = Math.round(run.score / total * 100);
+  const msg = pct >= 80 ? '🏆 Xuất sắc!' : pct >= 50 ? '💪 Khá tốt!' : '📖 Cần ôn lại nhé!';
+  $('#quizCardArea').classList.add('hidden');
+  $('#runResult').classList.remove('hidden');
+  $('#runResult').innerHTML = `
+    <h2>${msg}</h2>
+    <p style="margin-top:6px">Bạn đúng <strong>${run.score}/${total}</strong> câu (${pct}%).</p>
+    <div class="study-actions">
+      <button class="btn primary" data-ract="again">🔄 Làm lại</button>
+      <button class="btn" data-ract="home">Về danh sách</button>
+    </div>`;
+  $('#runProgress').textContent = 'Hoàn thành';
+}
+$('#runResult').addEventListener('click', e => {
+  const b = e.target.closest('[data-ract]');
+  if (!b || !run) return;
+  if (b.dataset.ract === 'again') startQuizRun(run.quizId);
+  if (b.dataset.ract === 'home') exitQuizRun();
+});
+
+/* ================= BÀI TẬP ================= */
+let activeExerciseId = null;
+
+function renderExercises() {
+  const select = $('#exerciseCourseSelect');
+  const selectedId = select.value;
+  select.innerHTML = '<option value="">Chọn môn học</option>' + store.courses.map(course =>
+    `<option value="${course.id}">${esc(course.name)}</option>`).join('');
+  select.value = store.courses.some(course => course.id === selectedId)
+    ? selectedId : (store.courses[0]?.id || '');
+
+  const list = $('#exerciseList');
+  list.innerHTML = store.exercises.length ? store.exercises.map(exercise => {
+    const course = store.courses.find(item => item.id === exercise.courseId);
+    return `<div class="row">
+      <div class="row-main"><strong>${esc(course ? course.name : 'Môn đã xóa')}</strong><span class="muted">${esc(exercise.prompt.slice(0, 110))}${exercise.prompt.length > 110 ? '…' : ''}</span></div>
+      <div class="row-actions">
+        <button class="btn primary" data-exercise-open="${exercise.id}">Giải bài</button>
+        <button class="btn ghost" data-exercise-delete="${exercise.id}" title="Xóa bài tập">🗑️</button>
+      </div>
+    </div>`;
+  }).join('') : '<div class="empty">Chưa có bài tập. Chọn môn và nhập đề bài để bắt đầu.</div>';
+}
+
+function addExercise() {
+  const courseId = $('#exerciseCourseSelect').value;
+  const prompt = $('#exercisePromptInput').value.trim();
+  if (!courseId) return toast('Hãy tạo và chọn môn học trước');
+  if (!prompt) return toast('Hãy nhập đề bài');
+  const exercise = {
+    id: uid(), courseId, prompt,
+    answerKey: $('#exerciseAnswerInput').value.trim(), work: ''
+  };
+  store.exercises.unshift(exercise);
+  if (!save()) {
+    store.exercises.shift();
+    return toast('Không đủ dung lượng lưu bài tập');
+  }
+  $('#exercisePromptInput').value = '';
+  $('#exerciseAnswerInput').value = '';
+  renderExercises();
+  toast('Đã lưu bài tập');
+}
+$('#addExerciseBtn').addEventListener('click', addExercise);
+
+$('#exerciseList').addEventListener('click', e => {
+  const open = e.target.closest('[data-exercise-open]');
+  const remove = e.target.closest('[data-exercise-delete]');
+  if (open) openExercise(open.dataset.exerciseOpen);
+  if (remove) {
+    const exercise = store.exercises.find(item => item.id === remove.dataset.exerciseDelete);
+    if (!exercise || !confirm('Xóa bài tập này?')) return;
+    store.exercises = store.exercises.filter(item => item.id !== exercise.id);
+    save(); renderExercises();
+  }
+});
+
+function openExercise(id) {
+  const exercise = store.exercises.find(item => item.id === id);
+  if (!exercise) return;
+  activeExerciseId = id;
+  const course = store.courses.find(item => item.id === exercise.courseId);
+  $('#exerciseSolveTitle').textContent = course ? course.name : 'Bài tập';
+  $('#exerciseSolvePrompt').textContent = exercise.prompt;
+  $('#exerciseWorkInput').value = exercise.work || '';
+  $('#exerciseReferenceInput').value = exercise.answerKey || '';
+  $('#exerciseAutoResult').classList.add('hidden');
+  $('#exerciseReference').classList.add('hidden');
+  $('#toggleExerciseAnswerBtn').textContent = 'Xem lời giải tham khảo';
+  $('#exerciseHome').classList.add('hidden');
+  $('#exerciseSolve').classList.remove('hidden');
+}
+
+function exitExercise() {
+  activeExerciseId = null;
+  $('#exerciseSolve').classList.add('hidden');
+  $('#exerciseHome').classList.remove('hidden');
+  renderExercises();
+}
+$('#exitExerciseBtn').addEventListener('click', exitExercise);
+
+function solveMathExercise(source) {
+  let compact = source.trim()
+    .replace(/^(?:giải\s+(?:phương trình|biểu thức)\s*|giải\s+|tính\s+|rút gọn\s+)/i, '')
+    .replace(/[?.]$/, '')
+    .replace(/[×·]/g, '*').replace(/[÷:]/g, '/')
+    .replace(/[−–]/g, '-').replace(/,/g, '.')
+    .replace(/²/g, '^2').replace(/³/g, '^3')
+    .replace(/\s+/g, '').toLowerCase();
+  const rawTokens = compact.match(/(?:\d+(?:\.\d*)?|\.\d+)|x|[()+\-*/^=]/g);
+  if (!rawTokens || rawTokens.join('') !== compact) {
+    throw new Error('Chỉ nhập biểu thức số hoặc phương trình bậc nhất dùng x.');
+  }
+
+  const tokens = [];
+  const isNumber = token => token !== undefined && /^\d+(?:\.\d*)?$|^\.\d+$/.test(token);
+  const endsValue = token => isNumber(token) || token === 'x' || token === ')';
+  const startsValue = token => isNumber(token) || token === 'x' || token === '(';
+  rawTokens.forEach(token => {
+    if (tokens.length && endsValue(tokens[tokens.length - 1]) && startsValue(token)) tokens.push('*');
+    tokens.push(token);
+  });
+
+  let position = 0;
+  const steps = [];
+  const peek = () => tokens[position];
+  const formatNumber = value => {
+    const rounded = Math.abs(value) < 1e-10 ? 0 : Number(value.toFixed(8));
+    if (!Number.isFinite(rounded)) throw new Error('Kết quả vượt ngoài phạm vi tính toán.');
+    return String(rounded);
+  };
+  const formatLinear = value => {
+    if (Math.abs(value.a) < 1e-10) return formatNumber(value.b);
+    const coefficient = Math.abs(value.a - 1) < 1e-10 ? ''
+      : Math.abs(value.a + 1) < 1e-10 ? '-' : formatNumber(value.a);
+    let output = `${coefficient}x`;
+    if (Math.abs(value.b) >= 1e-10) output += value.b > 0
+      ? ` + ${formatNumber(value.b)}` : ` - ${formatNumber(Math.abs(value.b))}`;
+    return output;
+  };
+  const checked = (a, b) => {
+    if (!Number.isFinite(a) || !Number.isFinite(b)) throw new Error('Biểu thức không có kết quả hữu hạn.');
+    return { a, b };
+  };
+
+  function parsePrimary() {
+    const token = tokens[position++];
+    if (isNumber(token)) return { a: 0, b: Number(token) };
+    if (token === 'x') return { a: 1, b: 0 };
+    if (token === '(') {
+      const value = parseSum();
+      if (tokens[position++] !== ')') throw new Error('Thiếu dấu đóng ngoặc.');
+      return value;
+    }
+    throw new Error('Thiếu số, x hoặc dấu ngoặc hợp lệ.');
+  }
+
+  function parsePower() {
+    const base = parsePrimary();
+    if (peek() !== '^') return base;
+    position++;
+    const exponent = parseUnary();
+    if (Math.abs(exponent.a) > 1e-10) throw new Error('Số mũ phải là hằng số.');
+    if (Math.abs(base.a) > 1e-10) {
+      if (Math.abs(exponent.b) < 1e-10) return { a: 0, b: 1 };
+      if (Math.abs(exponent.b - 1) < 1e-10) return base;
+      throw new Error('Bộ giải hiện chỉ hỗ trợ phương trình bậc nhất, không hỗ trợ lũy thừa của x.');
+    }
+    return checked(0, Math.pow(base.b, exponent.b));
+  }
+
+  function parseUnary() {
+    if (peek() === '+') { position++; return parseUnary(); }
+    if (peek() === '-') {
+      position++;
+      const value = parseUnary();
+      return checked(-value.a, -value.b);
+    }
+    return parsePower();
+  }
+
+  function parseProduct() {
+    let value = parseUnary();
+    while (peek() === '*' || peek() === '/' || startsValue(peek())) {
+      const operator = peek() === '*' || peek() === '/' ? tokens[position++] : '*';
+      const right = parseUnary();
+      if (operator === '*') {
+        if (Math.abs(value.a) > 1e-10 && Math.abs(right.a) > 1e-10) {
+          throw new Error('Bộ giải hiện chỉ hỗ trợ phương trình bậc nhất một ẩn.');
+        }
+        const result = checked(value.a * right.b + right.a * value.b, value.b * right.b);
+        steps.push(`${formatLinear(value)} × ${formatLinear(right)} = ${formatLinear(result)}`);
+        value = result;
+      } else {
+        if (Math.abs(right.a) > 1e-10) throw new Error('Không thể chia cho biểu thức có chứa x.');
+        if (Math.abs(right.b) < 1e-10) throw new Error('Không thể chia cho 0.');
+        const result = checked(value.a / right.b, value.b / right.b);
+        steps.push(`${formatLinear(value)} ÷ ${formatLinear(right)} = ${formatLinear(result)}`);
+        value = result;
+      }
+    }
+    return value;
+  }
+
+  function parseSum() {
+    let value = parseProduct();
+    while (peek() === '+' || peek() === '-') {
+      const operator = tokens[position++];
+      const right = parseProduct();
+      const sign = operator === '+' ? 1 : -1;
+      const result = checked(value.a + sign * right.a, value.b + sign * right.b);
+      steps.push(`${formatLinear(value)} ${operator} ${formatLinear(right)} = ${formatLinear(result)}`);
+      value = result;
+    }
+    return value;
+  }
+
+  if (!tokens.length) throw new Error('Hãy nhập biểu thức cần giải.');
+  const left = parseSum();
+  let right = null;
+  if (peek() === '=') {
+    position++;
+    right = parseSum();
+  }
+  if (position !== tokens.length) throw new Error('Kiểm tra lại ký hiệu hoặc dấu ngoặc trong đề bài.');
+
+  if (!right) {
+    if (Math.abs(left.a) > 1e-10) throw new Error('Hãy nhập dấu = để giải phương trình có x.');
+    return { answer: formatNumber(left.b), steps };
+  }
+  if (!tokens.includes('x')) {
+    const equal = Math.abs(left.b - right.b) < 1e-10;
+    return { answer: equal ? 'Đẳng thức đúng' : 'Đẳng thức sai', steps };
+  }
+  const coefficient = left.a - right.a;
+  const constant = right.b - left.b;
+  if (Math.abs(coefficient) < 1e-10) {
+    return { answer: Math.abs(constant) < 1e-10 ? 'Phương trình có vô số nghiệm' : 'Phương trình vô nghiệm', steps };
+  }
+  steps.push(`Chuyển vế: ${formatLinear({ a: coefficient, b: 0 })} = ${formatNumber(constant)}`);
+  const answer = constant / coefficient;
+  steps.push(`Chia hai vế cho ${formatNumber(coefficient)}: x = ${formatNumber(answer)}`);
+  return { answer: `x = ${formatNumber(answer)}`, steps };
+}
+
+$('#autoSolveExerciseBtn').addEventListener('click', () => {
+  const exercise = store.exercises.find(item => item.id === activeExerciseId);
+  if (!exercise) return;
+  const resultArea = $('#exerciseAutoResult');
+  if (/thất\s+ngôn\s+bát\s+cú/i.test(exercise.prompt)) {
+    const poem = [
+      'Trăng sáng quê nhà tỏa sắc hương',
+      'Sông êm lặng lẽ dưới màn sương',
+      'Tre già soi bóng bên thềm cũ',
+      'Gió nhẹ đưa hương khắp nẻo đường',
+      'Mẹ ngồi vá áo bên hiên vắng',
+      'Cha bước về quê giữa khói sương',
+      'Bếp lửa hồng lên niềm ấm áp',
+      'Tình quê theo mãi dặm muôn phương'
+    ];
+    const syllableCounts = poem.map(line => line.trim().split(/\s+/).length);
+    resultArea.innerHTML = `<h2>Bài thơ mẫu: Quê hương</h2><p class="exercise-problem">${poem.map(esc).join('<br>')}</p><p class="muted" style="margin-top:10px">Đã kiểm tra: 8 câu, mỗi câu 7 tiếng (${syllableCounts.join(' / ')}). Bài tập trung vào số tiếng và vần; niêm luật, đối và bằng-trắc cần được rà soát thêm theo yêu cầu của giáo viên.</p>`;
+    resultArea.classList.remove('hidden');
+    return;
+  }
+  try {
+    const result = solveMathExercise(exercise.prompt);
+    resultArea.innerHTML = `<h2>Kết quả: ${esc(result.answer)}</h2>${result.steps.length
+      ? `<ol>${result.steps.map(step => `<li>${esc(step)}</li>`).join('')}</ol>`
+      : '<p>Biểu thức chỉ có một giá trị.</p>'}`;
+  } catch (error) {
+    resultArea.innerHTML = `<h2>Chưa giải tự động được</h2><p>${esc(error.message)}</p><p class="muted" style="margin-top:8px">Bạn có thể ghi bài làm của mình hoặc xem lời giải tham khảo nếu đã nhập.</p>`;
+  }
+  resultArea.classList.remove('hidden');
+});
+
+function theoryTerms(text) {
+  const stopWords = new Set([
+    'cua', 'la', 'va', 'cho', 'mot', 'nhung', 'cac', 'em', 'gi', 'nao', 'the', 'trong',
+    'khi', 'co', 'khong', 'neu', 'vi', 'sao', 'hay', 'tu', 'den', 'duoc', 'nhu', 've',
+    'bai', 'tap', 'giai', 'trinh', 'bay', 'neu', 'cho', 'biet', 'theo', 'cac', 'hanh',
+    'dong', 'sau', 'day', 'nua', 'mot', 'so', 'hay', 'lao', 'giua'
+  ]);
+  return [...new Set(text.toLocaleLowerCase('vi')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd')
+    .replace(/[^a-z0-9]+/g, ' ').trim().split(/\s+/)
+    .filter(term => term.length > 2 && !stopWords.has(term)))];
+}
+
+function findTheoryMatches(exercise) {
+  const course = store.courses.find(item => item.id === exercise.courseId);
+  if (!course) return [];
+  const queryTerms = theoryTerms(exercise.prompt);
+  if (queryTerms.length < 2) return [];
+  let lessons = course.files.flatMap(file => file.lessons.map(lesson => ({
+    ...lesson, source: file.name
+  })));
+  if (!lessons.length) {
+    const pack = getSamplePack(course.name) || [];
+    lessons = pack.map(([title, question, content]) => ({ title, question, content, source: 'Bài mẫu lớp 8' }));
+  }
+  return lessons.map(lesson => {
+    const terms = new Set(theoryTerms(`${lesson.title} ${lesson.question || ''} ${lesson.content}`));
+    const matched = queryTerms.filter(term => terms.has(term));
+    return { lesson, score: matched.length / queryTerms.length };
+  }).filter(result => result.score >= 0.3)
+    .sort((a, b) => b.score - a.score).slice(0, 2);
+}
+
+$('#searchTheoryExerciseBtn').addEventListener('click', () => {
+  const exercise = store.exercises.find(item => item.id === activeExerciseId);
+  if (!exercise) return;
+  const course = store.courses.find(item => item.id === exercise.courseId);
+  const matches = findTheoryMatches(exercise);
+  const resultArea = $('#exerciseAutoResult');
+  resultArea.innerHTML = matches.length
+    ? `<h2>Gợi ý lý thuyết môn ${esc(course.name)}</h2>${matches.map(({ lesson }) => `
+        <div style="margin-top:12px"><strong>${esc(lesson.title)}</strong>
+          <p class="muted">Nguồn: ${esc(lesson.source)}</p>
+          <p class="exercise-problem" style="margin-top:6px">${esc(lesson.content)}</p>
+        </div>`).join('')}`
+    : '<h2>Chưa tìm thấy nội dung phù hợp</h2><p>Kho lý thuyết offline của môn này chưa có nội dung khớp đủ với đề. Hãy thêm bài mẫu/tài liệu hoặc nhập lời giải tham khảo để đối chiếu.</p>';
+  resultArea.classList.remove('hidden');
+});
+
+$('#toggleExerciseAnswerBtn').addEventListener('click', () => {
+  const exercise = store.exercises.find(item => item.id === activeExerciseId);
+  if (!exercise) return;
+  const reference = $('#exerciseReference');
+  const showing = !reference.classList.contains('hidden');
+  $('#exerciseReferenceInput').value = exercise.answerKey || '';
+  reference.classList.toggle('hidden', showing);
+  $('#toggleExerciseAnswerBtn').textContent = showing ? 'Xem lời giải tham khảo' : 'Ẩn lời giải tham khảo';
+});
+
+$('#saveExerciseReferenceBtn').addEventListener('click', () => {
+  const exercise = store.exercises.find(item => item.id === activeExerciseId);
+  if (!exercise) return;
+  const previousAnswer = exercise.answerKey || '';
+  exercise.answerKey = $('#exerciseReferenceInput').value.trim();
+  if (!save()) {
+    exercise.answerKey = previousAnswer;
+    return toast('Không đủ dung lượng lưu lời giải tham khảo');
+  }
+  toast('Đã lưu lời giải tham khảo');
+});
+
+$('#saveExerciseWorkBtn').addEventListener('click', () => {
+  const exercise = store.exercises.find(item => item.id === activeExerciseId);
+  if (!exercise) return;
+  const previousWork = exercise.work || '';
+  exercise.work = $('#exerciseWorkInput').value.trim();
+  if (!save()) {
+    exercise.work = previousWork;
+    return toast('Không đủ dung lượng lưu bài làm');
+  }
+  toast('Đã lưu bài làm của bạn');
+});
+
+/* ================= POMODORO ================= */
+const POM = {
+  focus: { label: 'Tập trung', secs: 25 * 60, next: 'short' },
+  short: { label: 'Nghỉ ngắn', secs: 5 * 60,  next: 'focus' },
+  long:  { label: 'Nghỉ dài',  secs: 15 * 60, next: 'focus' },
+};
+const CIRC = 691.15; // chu vi vòng tròn r=110
+let pom = { mode: 'focus', remaining: POM.focus.secs * 1000, endAt: null, running: false, tick: null };
+
+function setMode(mode) {
+  stopTick();
+  pom.mode = mode;
+  pom.running = false;
+  pom.endAt = null;
+  pom.remaining = POM[mode].secs * 1000;
+  $$('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  $('#timerMode').textContent = POM[mode].label;
+  updateTimerUI();
+}
+function updateTimerUI() {
+  const total = POM[pom.mode].secs * 1000;
+  const ms = Math.max(0, pom.remaining);
+  const s = Math.ceil(ms / 1000);
+  $('#timerText').textContent =
+    `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  $('#timerBar').style.strokeDashoffset = String(CIRC * (ms / total));
+  $('#startPauseBtn').textContent = pom.running ? '⏸ Tạm dừng' : '▶ Bắt đầu';
+  $('#pomStat').textContent = `🍅 Bạn đã hoàn thành ${store.pomSessions} phiên tập trung.`;
+}
+function startPause() {
+  if (pom.running) {
+    pom.remaining = Math.max(0, pom.endAt - Date.now());
+    stopTick();
+    pom.running = false;
+  } else {
+    if (pom.remaining <= 0) pom.remaining = POM[pom.mode].secs * 1000;
+    pom.endAt = Date.now() + pom.remaining;
+    pom.running = true;
+    startTick();
+    ensureAudio();
+  }
+  updateTimerUI();
+}
+function resetTimer() {
+  stopTick();
+  pom.running = false;
+  pom.endAt = null;
+  pom.remaining = POM[pom.mode].secs * 1000;
+  updateTimerUI();
+}
+function startTick() { stopTick(); pom.tick = setInterval(tickPom, 250); }
+function stopTick() { if (pom.tick) { clearInterval(pom.tick); pom.tick = null; } }
+
+function tickPom() {
+  pom.remaining = pom.endAt - Date.now();
+  if (pom.remaining > 0) return updateTimerUI();
+  stopTick();
+  pom.running = false;
+  const wasFocus = pom.mode === 'focus';
+  if (wasFocus) { store.pomSessions++; save(); }
+  beep();
+  toast(wasFocus ? '⏰ Hết giờ tập trung! Nghỉ ngơi chút nhé ☕' : '⏰ Hết giờ nghỉ! Bắt đầu lại nào 🎯');
+  setMode(POM[pom.mode].next);
+  startPause(); // tự động bắt đầu phiên tiếp theo
+}
+
+$('#startPauseBtn').addEventListener('click', startPause);
+$('#resetTimerBtn').addEventListener('click', resetTimer);
+$$('.mode-btn').forEach(b => b.addEventListener('click', () => setMode(b.dataset.mode)));
+
+/* --- Âm báo hết giờ --- */
+let audioCtx = null;
+function ensureAudio() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  } catch (e) {}
+}
+function beep() {
+  try {
+    ensureAudio();
+    if (!audioCtx) return;
+    const t0 = audioCtx.currentTime;
+    [660, 880, 990].forEach((f, i) => {
+      const o = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      o.type = 'sine';
+      o.frequency.value = f;
+      o.connect(g); g.connect(audioCtx.destination);
+      const t = t0 + i * 0.3;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.3, t + 0.04);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.26);
+      o.start(t); o.stop(t + 0.3);
+    });
+  } catch (e) {}
+}
+
+/* ================= VIỆC CẦN LÀM ================= */
+let todoFilter = 'all';
+
+function renderTodos() {
+  const list = $('#todoList');
+  const items = store.todos.filter(t =>
+    todoFilter === 'all' ? true : todoFilter === 'done' ? t.done : !t.done);
+  list.innerHTML = items.length ? items.map(t => `<div class="row">
+      <input type="checkbox" class="todo-check" data-id="${t.id}" ${t.done ? 'checked' : ''} />
+      <span class="todo-text ${t.done ? 'done' : ''}">${esc(t.text)}</span>
+      <button class="btn ghost" data-del="${t.id}" title="Xóa việc">🗑️</button>
+    </div>`).join('')
+    : `<div class="empty">${todoFilter === 'all' ? 'Chưa có việc nào. Thêm việc đầu tiên phía trên! 🎯' : 'Không có việc nào trong mục này.'}</div>`;
+  const done = store.todos.filter(t => t.done).length;
+  const total = store.todos.length;
+  $('#todoStat').textContent = total ? `${done}/${total} việc đã hoàn thành` : 'Chưa có việc nào';
+  $('#todoBar').style.width = total ? (done / total * 100) + '%' : '0%';
+}
+
+$('#todoList').addEventListener('click', e => {
+  const del = e.target.closest('[data-del]');
+  if (!del) return;
+  store.todos = store.todos.filter(t => t.id !== del.dataset.del);
+  save(); renderTodos();
+});
+$('#todoList').addEventListener('change', e => {
+  const chk = e.target.closest('.todo-check');
+  if (!chk) return;
+  const t = store.todos.find(x => x.id === chk.dataset.id);
+  if (!t) return;
+  t.done = chk.checked;
+  save(); renderTodos();
+});
+
+function addTodo() {
+  const v = $('#todoInput').value.trim();
+  if (!v) return toast('Hãy nhập việc cần làm');
+  store.todos.unshift({ id: uid(), text: v, done: false });
+  $('#todoInput').value = '';
+  save(); renderTodos();
+}
+$('#addTodoBtn').addEventListener('click', addTodo);
+
+$$('.filter-btn').forEach(b => b.addEventListener('click', () => {
+  todoFilter = b.dataset.filter;
+  $$('.filter-btn').forEach(x => x.classList.toggle('active', x === b));
+  renderTodos();
+}));
+
+$('#clearDoneBtn').addEventListener('click', () => {
+  const n = store.todos.filter(t => t.done).length;
+  if (!n) return toast('Không có việc nào đã hoàn thành');
+  store.todos = store.todos.filter(t => !t.done);
+  save(); renderTodos();
+  toast(`Đã xóa ${n} việc đã hoàn thành`);
+});
+
+/* ================= Nhập nhanh bằng phím Enter ================= */
+$('#courseNameInput').addEventListener('keydown', e => { if (e.key === 'Enter') addCourse(); });
+$('#deckNameInput').addEventListener('keydown', e => { if (e.key === 'Enter') addDeck(); });
+$('#cardFrontInput').addEventListener('keydown', e => { if (e.key === 'Enter') addCard(); });
+$('#cardBackInput').addEventListener('keydown', e => { if (e.key === 'Enter') addCard(); });
+$('#quizTitleInput').addEventListener('keydown', e => { if (e.key === 'Enter') addQuiz(); });
+$('#questionInput').addEventListener('keydown', e => { if (e.key === 'Enter') addQuestion(); });
+$('#todoInput').addEventListener('keydown', e => { if (e.key === 'Enter') addTodo(); });
+
+/* ================= Khởi động ================= */
+function shuffleArr(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+applyTheme();
+renderCourses();
+renderDecks();
+renderQuizzes();
+renderTodos();
+updateTimerUI();
+</script>
+</body>
+</html>
