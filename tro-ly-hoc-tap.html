@@ -133,6 +133,11 @@
   .feedback { margin-top: 12px; font-weight: 600; min-height: 22px; }
   .feedback.ok { color: var(--green); }
   .feedback.bad { color: var(--red); }
+  .pet-reward { margin-top: 14px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); }
+  .pet-reward-new { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+  .pet-reward-emoji { font-size: 36px; animation: pet-pop .35s ease-out; }
+  .pet-collection { margin-top: 8px; color: var(--muted); font-size: 22px; letter-spacing: 3px; overflow-wrap: anywhere; }
+  @keyframes pet-pop { from { transform: scale(.4) rotate(-15deg); } to { transform: scale(1) rotate(0); } }
 
   /* ===== Pomodoro ===== */
   .pomodoro-card { max-width: 520px; margin: 0 auto; text-align: center; }
@@ -188,6 +193,222 @@
     font-size: 14px; opacity: 0; pointer-events: none; transition: .25s; z-index: 50; max-width: 90vw;
   }
   #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ===== Giao diện học tập tươi sáng ===== */
+  :root {
+    --bg: #f3f8f5; --surface: #ffffff; --surface-2: #f7fbf9; --bg-input: #fbfdfc;
+    --text: #18332f; --muted: #70847f; --border: #dce9e3;
+    --primary: #16877b; --primary-2: #39aa91;
+    --green: #15966d; --red: #dd6262;
+    --green-soft: #e1f5eb; --red-soft: #fff0ed;
+    --ring: rgba(22, 135, 123, .25);
+    --radius: 20px;
+    --shadow: 0 12px 32px rgba(36, 87, 72, .08);
+  }
+  html[data-theme="dark"] {
+    --bg: #101c1a; --surface: #182724; --surface-2: #20332f; --bg-input: #15221f;
+    --text: #e9f5ef; --muted: #a0b5ae; --border: #304740;
+    --primary: #247e70; --primary-2: #338f79;
+    --green: #37b887; --red: #f07a73;
+    --green-soft: rgba(55, 184, 135, .18); --red-soft: rgba(240, 122, 115, .17);
+    --ring: rgba(73, 185, 160, .38);
+    --shadow: 0 12px 32px rgba(0, 0, 0, .2);
+  }
+  body {
+    background:
+      radial-gradient(ellipse at 5% 0%, rgba(255, 218, 143, .20), transparent 26rem),
+      radial-gradient(ellipse at 96% 12%, rgba(141, 220, 194, .18), transparent 28rem),
+      var(--bg);
+    line-height: 1.5;
+  }
+  .app-header {
+    position: relative;
+    overflow: hidden;
+    padding: 34px 20px 54px;
+    background: linear-gradient(120deg, #117e75, #26a58b 62%, #68c69b);
+  }
+  .app-header::after {
+    content: "✦";
+    position: absolute;
+    right: max(7%, calc((100vw - 1080px) / 2));
+    top: 10px;
+    color: rgba(255, 255, 255, .2);
+    font-size: 110px;
+    line-height: 1;
+    transform: rotate(12deg);
+    pointer-events: none;
+  }
+  .header-inner { max-width: 1080px; }
+  .hero-illustration {
+    position: absolute;
+    z-index: 0;
+    width: 190px;
+    height: 150px;
+    right: 62px;
+    top: -8px;
+    overflow: visible;
+    filter: drop-shadow(0 12px 14px rgba(10, 67, 60, .16));
+    animation: illustration-float 4s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .page-hero {
+    --hero-color: #16877b;
+    --hero-color-2: #55b99b;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 142px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    padding: 20px 30px;
+    border: 1px solid rgba(255, 255, 255, .7);
+    border-radius: 22px;
+    background: linear-gradient(115deg, color-mix(in srgb, var(--hero-color) 13%, var(--surface)), color-mix(in srgb, var(--hero-color-2) 17%, var(--surface)));
+    box-shadow: var(--shadow);
+  }
+  .page-hero::after {
+    content: "";
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    right: 42px;
+    top: -92px;
+    border: 1px solid color-mix(in srgb, var(--hero-color) 14%, transparent);
+    border-radius: 50%;
+    box-shadow: 0 0 0 20px color-mix(in srgb, var(--hero-color) 4%, transparent), 0 0 0 42px color-mix(in srgb, var(--hero-color) 3%, transparent);
+    pointer-events: none;
+  }
+  .page-hero-copy { position: relative; z-index: 1; }
+  .page-hero-kicker {
+    display: inline-block;
+    margin-bottom: 5px;
+    color: var(--hero-color);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+  .page-hero h2 { color: var(--text); font-size: clamp(20px, 2.5vw, 26px); letter-spacing: -.035em; }
+  .page-hero p { margin-top: 4px; color: var(--muted); font-size: 14px; }
+  .page-hero-art {
+    position: relative;
+    z-index: 1;
+    width: 138px;
+    height: 112px;
+    flex: 0 0 auto;
+    overflow: visible;
+    filter: drop-shadow(0 8px 8px color-mix(in srgb, var(--hero-color) 18%, transparent));
+    animation: illustration-float 4s ease-in-out infinite;
+  }
+  .page-hero-art .art-disc { fill: color-mix(in srgb, var(--hero-color) 17%, white); }
+  .page-hero-art .art-spark { fill: #f5bc51; }
+  .hero-courses { --hero-color: #e99a39; --hero-color-2: #f2c85c; }
+  .hero-flashcards { --hero-color: #e77e92; --hero-color-2: #f5bc72; }
+  .hero-quiz { --hero-color: #8873dd; --hero-color-2: #b7a6ef; }
+  .hero-exercises { --hero-color: #399bb0; --hero-color-2: #71c5c2; }
+  .hero-pomodoro { --hero-color: #df775e; --hero-color-2: #f3b567; }
+  .hero-todo { --hero-color: #4a9b78; --hero-color-2: #94c978; }
+  .app-header h1, .app-header .subtitle { position: relative; z-index: 1; }
+  @keyframes illustration-float {
+    0%, 100% { transform: translateY(0) rotate(-1deg); }
+    50% { transform: translateY(-5px) rotate(1deg); }
+  }
+  .app-header h1 { font-size: clamp(25px, 3vw, 34px); letter-spacing: -.04em; }
+  .subtitle { margin-top: 7px; font-size: 14px; }
+  .icon-btn { z-index: 1; border: 1px solid rgba(255,255,255,.22); border-radius: 14px; backdrop-filter: blur(8px); }
+  .tabs {
+    max-width: 1080px;
+    margin-top: -25px;
+    gap: 10px;
+  }
+  .tab-btn {
+    flex: 1 1 145px;
+    border: 1px solid rgba(220, 233, 227, .9);
+    padding: 13px 12px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(36, 87, 72, .06);
+    transition: background .18s, color .18s, border-color .18s, transform .18s, box-shadow .18s;
+  }
+  .tab-btn:hover { color: var(--primary); box-shadow: 0 10px 22px rgba(36, 87, 72, .10); }
+  .tab-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; box-shadow: 0 9px 20px rgba(22, 135, 123, .22); }
+  .container { max-width: 1080px; margin-top: 26px; }
+  .card {
+    border-radius: var(--radius);
+    padding: 22px;
+    box-shadow: var(--shadow);
+    transition: border-color .18s, box-shadow .18s;
+  }
+  .card h2 { font-size: 17px; letter-spacing: -.01em; }
+  .card-head { margin-bottom: 16px; }
+  .grid-2, .course-layout { gap: 20px; }
+  input:not([type]), input[type="text"], textarea, select {
+    border-radius: 12px;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input:focus, textarea:focus, select:focus { outline: none; box-shadow: 0 0 0 4px var(--ring); border-color: var(--primary); }
+  .btn {
+    border-radius: 12px;
+    padding: 10px 15px;
+    transition: transform .16s, box-shadow .16s, filter .16s, background .16s;
+  }
+  .btn:hover { box-shadow: 0 6px 14px rgba(24, 51, 47, .10); }
+  .btn.primary { box-shadow: 0 6px 14px rgba(22, 135, 123, .18); }
+  .btn.primary:hover { filter: brightness(1.06); }
+  .row {
+    border-radius: 13px;
+    padding: 12px 14px;
+    transition: border-color .16s, transform .16s, background .16s;
+  }
+  .row:hover { border-color: color-mix(in srgb, var(--primary) 34%, var(--border)); }
+  #deckList { gap: 6px; }
+  #deckList .row { min-height: 58px; padding: 7px 10px; gap: 8px; border-radius: 12px; }
+  #deckList .row-main { min-width: 120px; gap: 0; }
+  #deckList .row-main strong { font-size: 13px; line-height: 1.3; }
+  #deckList .row-main .muted { font-size: 11px; }
+  #deckList .row-actions { gap: 5px; }
+  #deckList .row-actions .btn { padding: 6px 9px; font-size: 12px; }
+  #deckList .row-actions .btn[data-act="delDeck"] { min-width: 34px; padding: 5px 7px; }
+  .study-head { padding: 4px 2px; }
+  .flashcard { height: 290px; }
+  .flashcard-face { border-radius: 22px; padding: 32px; font-size: 23px; }
+  .flashcard-face.front { background: linear-gradient(145deg, var(--surface), var(--surface-2)); }
+  .flashcard-face.back { background: linear-gradient(135deg, var(--primary), var(--primary-2)); }
+  .quiz-card { overflow: hidden; }
+  .quiz-card .run-question { line-height: 1.55; }
+  .run-options { gap: 10px; }
+  .run-option { border-radius: 13px; padding: 14px 16px; }
+  .run-option:hover:not(:disabled) { background: var(--green-soft); border-color: var(--primary); transform: translateX(3px); }
+  .pet-reward { border-radius: 16px; background: var(--green-soft); }
+  .timer-wrap { width: 280px; height: 280px; }
+  #toast { border-radius: 14px; box-shadow: var(--shadow); }
+  :focus-visible { outline: 3px solid var(--ring); outline-offset: 2px; }
+  @media (max-width: 700px) {
+    .app-header { padding: 26px 18px 48px; }
+    .app-header::after { right: -10px; top: 42px; font-size: 72px; }
+    .app-header h1 { font-size: 24px; }
+    .hero-illustration { width: 104px; height: 90px; right: 38px; top: 20px; opacity: .9; }
+    .app-header .subtitle { max-width: 54%; }
+    .page-hero { min-height: 112px; margin-bottom: 14px; padding: 15px 17px; border-radius: 17px; }
+    .page-hero p { max-width: 205px; font-size: 12px; }
+    .page-hero-art { width: 96px; height: 82px; margin-right: -5px; }
+    .page-hero::after { right: 14px; top: -106px; }
+    .tabs { gap: 8px; padding: 0 14px; }
+    .tab-btn { flex: 1 1 calc(50% - 8px); padding: 11px 8px; font-size: 13px; }
+    .container { margin-top: 20px; padding: 0 14px; }
+    .card { padding: 17px; border-radius: 17px; }
+    #deckList .row { min-height: 54px; padding: 6px 8px; }
+    #deckList .row-actions { gap: 4px; }
+    #deckList .row-actions .btn { padding: 6px 7px; font-size: 11px; }
+    #deckList .row-actions .btn[data-act="delDeck"] { min-width: 31px; }
+    .flashcard { height: 250px; }
+    .flashcard-face { font-size: 20px; padding: 22px; }
+    .study-head { gap: 9px; }
+    .study-head strong { flex-basis: 55%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
 </style>
 </head>
 <body>
@@ -196,6 +417,38 @@
   <div class="header-inner">
     <h1>📚 Trợ lý Học tập</h1>
     <p class="subtitle">Môn học · Ôn tập · Thẻ ghi nhớ · Trắc nghiệm · Pomodoro</p>
+    <svg class="hero-illustration" viewBox="0 0 220 170" aria-hidden="true">
+      <defs>
+        <linearGradient id="bookCover" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#ffcd70" />
+          <stop offset="1" stop-color="#ff9b65" />
+        </linearGradient>
+        <linearGradient id="bookPage" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#fffef7" />
+          <stop offset="1" stop-color="#e5f2e7" />
+        </linearGradient>
+      </defs>
+      <circle cx="127" cy="81" r="66" fill="#ffffff" opacity=".13" />
+      <path d="M38 129 128 139 181 116 89 107Z" fill="#126d67" opacity=".3" />
+      <g transform="rotate(-8 105 96)">
+        <path d="M54 63q28-9 53 7v62q-26-15-53-6z" fill="url(#bookCover)" stroke="#fff7df" stroke-width="3" />
+        <path d="M107 70q27-16 54-8v63q-27-7-54 7z" fill="url(#bookPage)" stroke="#fff7df" stroke-width="3" />
+        <path d="M107 70v62" fill="none" stroke="#d2e3d5" stroke-width="3" />
+        <path d="M65 79q17-4 31 2M65 90q17-4 31 2M119 82q15-8 31-7M119 94q15-8 31-7" fill="none" stroke="#fff4d4" stroke-linecap="round" stroke-width="3" />
+        <circle cx="82" cy="111" r="7" fill="#fff4d4" opacity=".9" />
+        <path d="M78 108q4-5 8 0" fill="none" stroke="#f29c62" stroke-linecap="round" stroke-width="2" />
+      </g>
+      <g transform="rotate(28 169 63)">
+        <rect x="159" y="30" width="13" height="67" rx="6" fill="#ff8190" />
+        <path d="m159 95 6.5 14 6.5-14z" fill="#f8d6a0" />
+        <path d="m163 105 3 7 3-7z" fill="#365c55" />
+        <rect x="159" y="30" width="13" height="12" rx="5" fill="#ffb6bb" />
+      </g>
+      <path d="m48 47 4 9 10 1-7 6 2 10-9-5-8 5 2-10-7-6 10-1z" fill="#ffe38a" />
+      <path d="m184 76 3 6 7 1-5 5 1 7-6-3-6 3 1-7-5-5 7-1z" fill="#d8f4c3" />
+      <circle cx="50" cy="103" r="4" fill="#fff" opacity=".8" />
+      <circle cx="193" cy="39" r="3" fill="#fff" opacity=".75" />
+    </svg>
     <button id="themeBtn" class="icon-btn" title="Đổi giao diện sáng/tối">🌙</button>
   </div>
 </header>
@@ -213,6 +466,21 @@
 
   <!-- ============ MÔN HỌC ============ -->
   <section id="tab-courses" class="tab-panel hidden">
+    <div class="page-hero hero-courses">
+      <div class="page-hero-copy">
+        <span class="page-hero-kicker">Khám phá kiến thức</span>
+        <h2>Môn học của em</h2>
+        <p>Tổ chức bài học, lưu tài liệu và ôn tập theo chủ đề.</p>
+      </div>
+      <svg class="page-hero-art" viewBox="0 0 150 120" aria-hidden="true">
+        <circle class="art-disc" cx="77" cy="60" r="48" />
+        <ellipse cx="76" cy="101" rx="34" ry="6" fill="#3b7055" opacity=".15" />
+        <text x="76" y="80" text-anchor="middle" font-size="58">📚</text>
+        <text class="art-spark" x="28" y="39" font-size="18">✦</text>
+        <text x="115" y="45" font-size="15">✧</text>
+        <circle cx="119" cy="83" r="3" fill="#f5bc51" />
+      </svg>
+    </div>
     <div id="courseHome" class="course-layout">
       <div>
         <div class="card">
@@ -273,6 +541,29 @@
 
   <!-- ============ THẺ GHI NHỚ ============ -->
   <section id="tab-flashcards" class="tab-panel">
+    <div class="page-hero hero-flashcards">
+      <div class="page-hero-copy">
+        <span class="page-hero-kicker">Học một chút mỗi ngày</span>
+        <h2>Thẻ ghi nhớ</h2>
+        <p>Lật thẻ, ôn từ mới và ghi nhớ theo nhịp của riêng em.</p>
+      </div>
+      <svg class="page-hero-art" viewBox="0 0 150 120" aria-hidden="true">
+        <circle class="art-disc" cx="77" cy="60" r="48" />
+        <ellipse cx="77" cy="102" rx="33" ry="6" fill="#8b5362" opacity=".14" />
+        <g transform="rotate(-12 67 62)">
+          <rect x="39" y="31" width="51" height="65" rx="9" fill="#fff" />
+          <rect x="47" y="41" width="35" height="5" rx="2.5" fill="#f2b6c1" />
+          <rect x="47" y="53" width="27" height="4" rx="2" fill="#f6d6dc" />
+          <text x="64" y="83" text-anchor="middle" font-size="22">A</text>
+        </g>
+        <g transform="rotate(13 91 59)">
+          <rect x="75" y="37" width="43" height="58" rx="8" fill="#ffd578" stroke="#fff4d6" stroke-width="3" />
+          <text x="97" y="76" text-anchor="middle" font-size="24">?</text>
+        </g>
+        <text class="art-spark" x="26" y="40" font-size="17">✦</text>
+        <text x="119" y="40" font-size="15">✧</text>
+      </svg>
+    </div>
     <div id="fcHome">
       <div class="grid-2">
         <div class="card">
@@ -332,6 +623,22 @@
 
   <!-- ============ TRẮC NGHIỆM ============ -->
   <section id="tab-quiz" class="tab-panel hidden">
+    <div class="page-hero hero-quiz">
+      <div class="page-hero-copy">
+        <span class="page-hero-kicker">Thử sức và tiến bộ</span>
+        <h2>Góc trắc nghiệm</h2>
+        <p>Mỗi câu trả lời đúng là một bước gần hơn tới mục tiêu.</p>
+      </div>
+      <svg class="page-hero-art" viewBox="0 0 150 120" aria-hidden="true">
+        <circle class="art-disc" cx="77" cy="60" r="48" />
+        <ellipse cx="77" cy="102" rx="32" ry="6" fill="#584f87" opacity=".15" />
+        <path d="M45 40q18-8 32 4 14-12 32-4v48q-18-8-32 4-14-12-32-4z" fill="#fff" stroke="#eee8ff" stroke-width="3" />
+        <path d="M77 44v48" stroke="#d8cff7" stroke-width="3" />
+        <path d="m53 56 5 5 9-10m-14 24 5 5 9-10m18-14h11m-11 14h13" fill="none" stroke="#8671d4" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" />
+        <text class="art-spark" x="28" y="38" font-size="17">✦</text>
+        <text x="112" y="42" font-size="25">🏆</text>
+      </svg>
+    </div>
     <div id="qzHome">
       <div class="grid-2">
         <div class="card">
@@ -374,6 +681,10 @@
         <p id="runQuestion" class="run-question"></p>
         <div id="runOptions" class="run-options"></div>
         <p id="runFeedback" class="feedback"></p>
+        <div id="quizPetReward" class="pet-reward hidden" aria-live="polite">
+          <div id="quizPetRewardMessage" class="pet-reward-new"></div>
+          <div id="quizPetCollection" class="pet-collection"></div>
+        </div>
         <button id="nextQuestionBtn" class="btn primary hidden">Câu tiếp theo ➡</button>
       </div>
 
@@ -383,6 +694,26 @@
 
   <!-- ============ BÀI TẬP ============ -->
   <section id="tab-exercises" class="tab-panel hidden">
+    <div class="page-hero hero-exercises">
+      <div class="page-hero-copy">
+        <span class="page-hero-kicker">Luyện tập mỗi ngày</span>
+        <h2>Bàn học bài tập</h2>
+        <p>Lưu đề, tự trình bày cách làm và xem lại lời giải.</p>
+      </div>
+      <svg class="page-hero-art" viewBox="0 0 150 120" aria-hidden="true">
+        <circle class="art-disc" cx="77" cy="60" r="48" />
+        <ellipse cx="76" cy="102" rx="34" ry="6" fill="#366e72" opacity=".14" />
+        <rect x="43" y="30" width="54" height="69" rx="8" fill="#fff" />
+        <path d="M54 46h30m-30 12h25m-25 12h19" stroke="#b7dfe0" stroke-linecap="round" stroke-width="4" />
+        <g transform="rotate(35 105 65)">
+          <rect x="99" y="33" width="12" height="53" rx="5" fill="#ff9a72" />
+          <path d="m99 83 6 14 6-14z" fill="#f7d592" />
+          <path d="m103 94 2 6 2-6z" fill="#516a61" />
+        </g>
+        <text class="art-spark" x="28" y="39" font-size="17">✦</text>
+        <circle cx="119" cy="88" r="4" fill="#ffca65" />
+      </svg>
+    </div>
     <div id="exerciseHome">
       <div class="grid-2">
         <div class="card">
@@ -432,6 +763,23 @@
 
   <!-- ============ POMODORO ============ -->
   <section id="tab-pomodoro" class="tab-panel hidden">
+    <div class="page-hero hero-pomodoro">
+      <div class="page-hero-copy">
+        <span class="page-hero-kicker">Tập trung rồi nghỉ ngơi</span>
+        <h2>Đồng hồ tập trung</h2>
+        <p>Chia thời gian học thành những phiên ngắn thật hiệu quả.</p>
+      </div>
+      <svg class="page-hero-art" viewBox="0 0 150 120" aria-hidden="true">
+        <circle class="art-disc" cx="77" cy="60" r="48" />
+        <ellipse cx="77" cy="102" rx="32" ry="6" fill="#875246" opacity=".14" />
+        <circle cx="76" cy="64" r="31" fill="#fff" stroke="#ffdfb5" stroke-width="5" />
+        <circle cx="76" cy="64" r="24" fill="#fff6e8" />
+        <path d="M76 47v18l12 8" fill="none" stroke="#df775e" stroke-linecap="round" stroke-width="4" />
+        <path d="M67 27h18m-9 0v6m15 1 5-5" fill="none" stroke="#a65646" stroke-linecap="round" stroke-width="5" />
+        <text class="art-spark" x="30" y="42" font-size="17">✦</text>
+        <text x="111" y="48" font-size="22">☕</text>
+      </svg>
+    </div>
     <div class="card pomodoro-card">
       <div class="mode-btns">
         <button class="btn mode-btn active" data-mode="focus">🎯 Tập trung 25'</button>
@@ -458,6 +806,22 @@
 
   <!-- ============ VIỆC CẦN LÀM ============ -->
   <section id="tab-todo" class="tab-panel hidden">
+    <div class="page-hero hero-todo">
+      <div class="page-hero-copy">
+        <span class="page-hero-kicker">Từng việc nhỏ, tiến bộ lớn</span>
+        <h2>Kế hoạch hôm nay</h2>
+        <p>Ghi lại việc cần làm và vui với từng mục đã hoàn thành.</p>
+      </div>
+      <svg class="page-hero-art" viewBox="0 0 150 120" aria-hidden="true">
+        <circle class="art-disc" cx="77" cy="60" r="48" />
+        <ellipse cx="77" cy="102" rx="30" ry="6" fill="#416d51" opacity=".14" />
+        <rect x="48" y="27" width="55" height="72" rx="9" fill="#fff" />
+        <rect x="64" y="22" width="23" height="11" rx="5" fill="#a8d587" />
+        <path d="m59 48 4 4 7-8m4 5h19m-34 14 4 4 7-8m4 5h19m-34 14 4 4 7-8m4 5h19" fill="none" stroke="#62aa7a" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" />
+        <text class="art-spark" x="31" y="39" font-size="17">✦</text>
+        <text x="108" y="83" font-size="23">🌱</text>
+      </svg>
+    </div>
     <div class="card">
       <h2>✅ Việc cần làm</h2>
       <div class="todo-add">
@@ -502,6 +866,135 @@ function toast(msg) {
 
 /* ================= Dữ liệu (localStorage) ================= */
 const KEY = 'studytool_v1';
+const SAMPLE_ENGLISH_VOCAB = [
+  ['improve', 'v. cải thiện · Regular feedback helped Mia improve her writing.'],
+  ['practice', 'v. luyện tập · After dinner, the band practices in the garage.'],
+  ['pronounce', 'v. phát âm · The guide showed us how to pronounce the village\'s name.'],
+  ['vocabulary', 'n. từ vựng · A picture dictionary can build a child\'s vocabulary.'],
+  ['subject', 'n. môn học · Among all her classes, art is the subject Lina enjoys most.'],
+  ['neighbor', 'n. hàng xóm · Our next-door neighbor grows tomatoes on the balcony.'],
+  ['helpful', 'adj. hữu ích, hay giúp đỡ · The map was helpful when we explored the old town.'],
+  ['careful', 'adj. cẩn thận · Be careful with those fragile glass ornaments.'],
+  ['important', 'adj. quan trọng · Clean water is important for every community.'],
+  ['interesting', 'adj. thú vị · Did you hear the interesting story about the moon?'],
+  ['environment', 'n. môi trường · Plastic bags can harm the environment.'],
+  ['recycle', 'v. tái chế · The school recycles cans to make less rubbish.'],
+  ['pollution', 'n. sự ô nhiễm · Traffic creates noise pollution near the highway.'],
+  ['wildlife', 'n. động vật hoang dã · At dawn, we watched wildlife gather by the river.'],
+  ['forest', 'n. rừng · Sunlight filtered through the tall forest trees.'],
+  ['reduce', 'v. giảm · Turning off unused lights can reduce electricity use.'],
+  ['healthy', 'adj. khỏe mạnh, có lợi cho sức khỏe · Fresh vegetables make a healthy lunch.'],
+  ['exercise', 'n./v. bài tập; tập thể dục · A short walk is good exercise after studying.'],
+  ['habit', 'n. thói quen · Keeping a journal became a relaxing habit for Omar.'],
+  ['advice', 'n. lời khuyên · The coach\'s advice helped our team prepare.'],
+  ['decide', 'v. quyết định · They will decide which poster to display tomorrow.'],
+  ['museum', 'n. bảo tàng · The science museum has a room full of robots.'],
+  ['ticket', 'n. vé · Please keep your ticket until the concert ends.'],
+  ['station', 'n. nhà ga · We waited for the bus at the station.'],
+  ['map', 'n. bản đồ · A paper map helped us find the mountain trail.'],
+  ['crowded', 'adj. đông đúc · The beach becomes crowded on summer weekends.'],
+  ['quiet', 'adj. yên tĩnh · We found a quiet corner to finish our homework.'],
+  ['expensive', 'adj. đắt · That camera is too expensive for my budget.'],
+  ['cheap', 'adj. rẻ · The shop sells cheap notebooks near the entrance.'],
+  ['delighted', 'adj. vui mừng · Ava was delighted to see her cousins at the door.'],
+  ['worried', 'adj. lo lắng · Dad grew worried when the hikers were late.'],
+  ['surprised', 'adj. ngạc nhiên · Everyone looked surprised when the lights came on.'],
+  ['patient', 'adj. kiên nhẫn · A patient tutor helped me understand the puzzle.'],
+  ['borrower', 'n. người mượn · Each borrower must return library books on time.'],
+  ['carry', 'v. mang, xách · Could you carry this box to the classroom?'],
+  ['prepare', 'v. chuẩn bị · We prepared snacks for the long train ride.'],
+  ['discover', 'v. khám phá, phát hiện · Scientists discovered a new plant in the valley.'],
+  ['collect', 'v. sưu tầm, thu gom · My brother collects postcards from every city he visits.'],
+  ['share', 'v. chia sẻ · Please share your ideas with the rest of the group.'],
+  ['achieve', 'v. đạt được · With steady effort, the team achieved its goal.'],
+  ['challenge', 'n. thử thách · Learning to swim was a big challenge for Ben.'],
+  ['solution', 'n. giải pháp · The class came up with a simple solution to the problem.'],
+  ['protect', 'v. bảo vệ · A helmet helps protect your head while cycling.'],
+  ['natural', 'adj. tự nhiên · This soap is made with natural ingredients.'],
+  ['bright', 'adj. sáng, thông minh · A bright lamp made the desk easier to use.'],
+  ['arrangement', 'n. sự sắp xếp · The flower arrangement decorated the center of the table.'],
+  ['season', 'n. mùa · Spring is the season when these trees blossom.'],
+  ['temperature', 'n. nhiệt độ · Check the oven temperature before baking the bread.'],
+  ['delivered', 'v. đã giao · The package was delivered to our door this morning.'],
+  ['adventure', 'n. cuộc phiêu lưu · Their camping adventure began beside a quiet lake.'],
+  ['appear', 'v. xuất hiện · A rainbow appeared after the afternoon shower.'],
+  ['attend', 'v. tham dự · More than fifty families attended the school concert.'],
+  ['compare', 'v. so sánh · Compare the two maps to find the shortest path.'],
+  ['continue', 'v. tiếp tục · The hikers continued along the trail after lunch.'],
+  ['curious', 'adj. tò mò · The curious kitten watched the fish tank for hours.'],
+  ['describe', 'v. miêu tả · Can you describe the person you saw at the gate?'],
+  ['develop', 'v. phát triển · The young trees develop stronger roots each year.'],
+  ['early', 'adv./adj. sớm · We left early to avoid the morning traffic.'],
+  ['famous', 'adj. nổi tiếng · The town is famous for its handmade pottery.'],
+  ['gather', 'v. tụ họp, thu thập · Neighbors gathered in the park for a picnic.'],
+  ['gentle', 'adj. nhẹ nhàng, dịu dàng · A gentle breeze moved the curtains.'],
+  ['leader', 'n. người lãnh đạo · Our group leader divided the tasks fairly.'],
+  ['local', 'adj. địa phương · We bought local fruit from the roadside stand.'],
+  ['manage', 'v. xoay xở, quản lý · She managed to finish the model before class.'],
+  ['modern', 'adj. hiện đại · The library combines modern design with old stone walls.'],
+  ['offer', 'v./n. đề nghị; lời đề nghị · The guide offered to carry our bags.'],
+  ['peaceful', 'adj. yên bình · The garden felt peaceful just after sunrise.'],
+  ['perhaps', 'adv. có lẽ · Perhaps we can visit the aquarium next Saturday.'],
+  ['popular', 'adj. phổ biến, được yêu thích · This board game is popular with our whole family.'],
+  ['recently', 'adv. gần đây · The town recently opened a new sports center.'],
+  ['valuable', 'adj. quý giá · That notebook contains valuable notes from the workshop.'],
+  ['arrive', 'v. đến nơi · The museum opens at nine, so please arrive early.'],
+  ['borrow', 'v. mượn · Nina borrowed a novel from the school library.'],
+  ['return', 'v. trả lại, quay về · Please return the keys to the front desk.'],
+  ['journey', 'n. chuyến đi · Their journey across the island began before sunrise.'],
+  ['weather', 'n. thời tiết · According to the forecast, the weather will clear by noon.'],
+  ['cloudy', 'adj. nhiều mây · Dark clouds gathered above the stadium.'],
+  ['delicious', 'adj. ngon · Warm cinnamon rolls filled the kitchen with a delicious smell.'],
+  ['usually', 'adv. thường thường · The village market usually closes before sunset.'],
+  ['sometimes', 'adv. thỉnh thoảng · On rainy weekends, Dad sometimes makes pancakes.'],
+  ['enough', 'det./adv. đủ · One bottle of water is not enough for the entire hike.'],
+  ['different', 'adj. khác nhau · Each student chose a different color for the mural.'],
+  ['together', 'adv. cùng nhau · The cousins built a kite together in the backyard.'],
+  ['success', 'n. sự thành công · The opening night was a success, despite the rain.'],
+  ['community', 'n. cộng đồng · Volunteers planted trees throughout the community.'],
+  ['festival', 'n. lễ hội · Lanterns lit the streets during the spring festival.'],
+  ['traditional', 'adj. truyền thống · The dancers performed a traditional song from the region.'],
+  ['message', 'n. tin nhắn, thông điệp · A message from the captain announced a change of plans.'],
+  ['technology', 'n. công nghệ · Modern technology lets doctors share scans quickly.'],
+  ['online', 'adj./adv. trực tuyến · We booked our tickets online last night.'],
+  ['creative', 'adj. sáng tạo · The children found a creative way to reuse cardboard boxes.'],
+  ['remember', 'v. nhớ · Remember to label each jar before filling it.'],
+  ['forget', 'v. quên · I nearly forgot my umbrella at the cafe.'],
+  ['choose', 'v. chọn, lựa chọn · Which route would you choose for the bike ride?'],
+  ['explain', 'v. giải thích · The diagram explains how a solar panel works.'],
+  ['invite', 'v. mời · Our class will invite a local author to speak.'],
+  ['promise', 'n./v. lời hứa; hứa · She made a promise to visit her grandparents each week.'],
+  ['favorite', 'n./adj. thứ yêu thích; được yêu thích nhất · Which is your favorite place to read?'],
+  ['carefully', 'adv. một cách cẩn thận · Review the recipe carefully before adding the yeast.'],
+  ['dangerous', 'adj. nguy hiểm · Hiking alone during a storm can be dangerous.']
+];
+
+function createEnglishVocabQuiz() {
+  const vocabulary = SAMPLE_ENGLISH_VOCAB.map(([front, back]) => {
+    const [meaning, ...example] = back.split(' · ');
+    return { word: front.trim(), meaning, example: example.join(' · ') };
+  });
+  const meanings = [...new Set(vocabulary.map(item => item.meaning))];
+  return {
+    id: uid(),
+    title: 'Tiếng Anh: Từ vựng qua câu mẫu',
+    shuffleQuestions: true,
+    shuffleOptions: true,
+    rewardPets: true,
+    questions: vocabulary.map(item => {
+      const options = shuffleArr([
+        item.meaning,
+        ...shuffleArr(meanings.filter(meaning => meaning !== item.meaning)).slice(0, 3)
+      ]);
+      return {
+        id: uid(),
+        q: `${item.example}\nTừ "${item.word}" trong câu có nghĩa là gì?`,
+        options,
+        answer: options.indexOf(item.meaning)
+      };
+    })
+  };
+}
 
 function seed() {
   return {
@@ -513,13 +1006,17 @@ function seed() {
         { id: uid(), front: 'study',    back: 'học tập',   known: false },
         { id: uid(), front: 'tomorrow', back: 'ngày mai',  known: false },
       ]
+    }, {
+      id: uid(), name: 'Từ vựng tiếng Anh (mẫu)', cards: SAMPLE_ENGLISH_VOCAB.map(([front, back]) => ({
+        id: uid(), front: front.trim(), back, known: false
+      }))
     }],
     quizzes: [{
       id: uid(), title: 'Kiến thức chung (mẫu)', questions: [
         { id: uid(), q: 'Thủ đô của Việt Nam là gì?', options: ['Hà Nội', 'Đà Nẵng', 'Huế', 'Cần Thơ'], answer: 0 },
         { id: uid(), q: 'Kết quả của 12 × 8 là?',     options: ['86', '96', '106', '108'],             answer: 1 },
       ]
-    }],
+    }, createEnglishVocabQuiz()],
     todos: [
       { id: uid(), text: 'Ôn 20 phút với bộ thẻ ghi nhớ', done: false },
       { id: uid(), text: 'Làm 1 bài trắc nghiệm',          done: false },
@@ -548,6 +1045,44 @@ if (store.theme !== 'dark') store.theme = 'light';
 if (typeof store.pomSessions !== 'number') store.pomSessions = 0;
 
 function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); return true; } catch (e) { return false; } }
+
+if (store.englishVocabSampleVersion !== 6) {
+  let englishDeck = store.decks.find(deck => deck.name === 'Từ vựng tiếng Anh (mẫu)');
+  if (!englishDeck) {
+    englishDeck = { id: uid(), name: 'Từ vựng tiếng Anh (mẫu)', cards: [] };
+    store.decks.push(englishDeck);
+  }
+  const sampleByWord = new Map(SAMPLE_ENGLISH_VOCAB.map(([front, back]) => [front.trim().toLowerCase(), back]));
+  const sampleWords = new Set(sampleByWord.keys());
+  const existingWords = new Set();
+  englishDeck.cards = englishDeck.cards.filter(card => {
+    const word = card.front.trim().toLowerCase();
+    if (sampleWords.has(word) && existingWords.has(word)) return false;
+    if (sampleWords.has(word)) existingWords.add(word);
+    return true;
+  });
+  englishDeck.cards.forEach(card => {
+    const sampleBack = sampleByWord.get(card.front.trim().toLowerCase());
+    if (sampleBack) card.back = sampleBack;
+  });
+  SAMPLE_ENGLISH_VOCAB.forEach(([front, back]) => {
+    if (!existingWords.has(front.trim().toLowerCase())) {
+      englishDeck.cards.push({ id: uid(), front: front.trim(), back, known: false });
+      existingWords.add(front.trim().toLowerCase());
+    }
+  });
+  store.englishVocabSampleVersion = 6;
+  save();
+}
+
+if (store.englishVocabQuizVersion !== 3) {
+  const quiz = createEnglishVocabQuiz();
+  const existingQuiz = store.quizzes.find(item => item.title === quiz.title);
+  if (existingQuiz) Object.assign(existingQuiz, quiz);
+  else store.quizzes.push(quiz);
+  store.englishVocabQuizVersion = 3;
+  save();
+}
 
 /* ================= Giao diện sáng / tối ================= */
 function applyTheme() {
@@ -1381,13 +1916,41 @@ function addQuestion() {
 $('#addQuestionBtn').addEventListener('click', addQuestion);
 
 /* --- Làm bài --- */
+const QUIZ_PETS = [
+  { emoji: '🐱', name: 'mèo con' }, { emoji: '🐶', name: 'cún con' },
+  { emoji: '🐰', name: 'thỏ nhỏ' }, { emoji: '🐼', name: 'gấu trúc' },
+  { emoji: '🦊', name: 'cáo con' }, { emoji: '🐸', name: 'ếch xanh' },
+  { emoji: '🐧', name: 'chim cánh cụt' }, { emoji: '🐨', name: 'gấu koala' },
+  { emoji: '🦄', name: 'kỳ lân' }, { emoji: '🐹', name: 'chuột hamster' },
+  { emoji: '🐯', name: 'hổ con' }, { emoji: '🐻', name: 'gấu nhỏ' }
+];
+
+function renderQuizPetReward(newPet = null) {
+  const q = store.quizzes.find(x => x.id === run.quizId);
+  const rewardArea = $('#quizPetReward');
+  if (!q || !q.rewardPets || !run.pets.length) {
+    rewardArea.classList.add('hidden');
+    return;
+  }
+  rewardArea.classList.remove('hidden');
+  $('#quizPetRewardMessage').innerHTML = newPet
+    ? `<span class="pet-reward-emoji" aria-hidden="true">${newPet.emoji}</span><span>Bạn nhận được ${newPet.name}! Giỏi lắm, tiếp tục nhé! 🌟</span>`
+    : '';
+  $('#quizPetCollection').textContent =
+    `Thú cưng đã nhận (${run.pets.length}): ${run.pets.slice(-12).map(pet => pet.emoji).join(' ')}`;
+}
+
 function startQuizRun(id) {
   const q = store.quizzes.find(x => x.id === id);
   if (!q) return;
   if (!q.questions.length) return toast('Bài này chưa có câu hỏi nào');
   let order = q.questions.map(x => x.id);
-  if ($('#shuffleQuizChk').checked) shuffleArr(order);
-  run = { quizId: id, order, idx: 0, score: 0, answered: false };
+  if (q.shuffleQuestions || $('#shuffleQuizChk').checked) shuffleArr(order);
+  const optionOrders = Object.fromEntries(q.questions.map(item => {
+    const indices = item.options.map((_, index) => index);
+    return [item.id, q.shuffleOptions ? shuffleArr(indices) : indices];
+  }));
+  run = { quizId: id, order, optionOrders, idx: 0, score: 0, answered: false, pets: [] };
   closeQuizEditor();
   $('#qzHome').classList.add('hidden');
   $('#qzRun').classList.remove('hidden');
@@ -1412,10 +1975,11 @@ function renderRun() {
   $('#runProgress').textContent = `Câu ${run.idx + 1}/${run.order.length} · Đúng: ${run.score}`;
   $('#runQuestion').textContent = item.q;
   const labels = ['A', 'B', 'C', 'D'];
-  $('#runOptions').innerHTML = item.options.map((o, i) =>
-    `<button class="run-option" data-i="${i}">${labels[i]}. ${esc(o)}</button>`).join('');
+  $('#runOptions').innerHTML = run.optionOrders[item.id].map((optionIndex, displayIndex) =>
+    `<button class="run-option" data-i="${displayIndex}">${labels[displayIndex]}. ${esc(item.options[optionIndex])}</button>`).join('');
   const fb = $('#runFeedback');
   fb.textContent = ''; fb.className = 'feedback';
+  renderQuizPetReward();
   $('#nextQuestionBtn').classList.add('hidden');
 }
 
@@ -1425,20 +1989,27 @@ $('#runOptions').addEventListener('click', e => {
   run.answered = true;
   const q = store.quizzes.find(x => x.id === run.quizId);
   const item = q.questions.find(x => x.id === run.order[run.idx]);
-  const picked = +b.dataset.i;
+  const optionOrder = run.optionOrders[item.id];
+  const picked = optionOrder[+b.dataset.i];
   const buttons = $$('#runOptions .run-option');
   buttons.forEach(btn => { btn.disabled = true; });
   const fb = $('#runFeedback');
   if (picked === item.answer) {
     run.score++;
     b.classList.add('correct');
-    fb.textContent = '🎉 Chính xác!';
+    fb.textContent = q.rewardPets ? '🎉 Chính xác! Bạn nhận được một thú cưng mới!' : '🎉 Chính xác!';
     fb.classList.add('ok');
+    if (q.rewardPets) {
+      const pet = QUIZ_PETS[run.pets.length % QUIZ_PETS.length];
+      run.pets.push(pet);
+      renderQuizPetReward(pet);
+    }
   } else {
     b.classList.add('wrong');
-    const ok = buttons.find(btn => +btn.dataset.i === item.answer);
+    const correctDisplayIndex = optionOrder.indexOf(item.answer);
+    const ok = buttons.find(btn => +btn.dataset.i === correctDisplayIndex);
     if (ok) ok.classList.add('correct');
-    fb.textContent = `❌ Sai rồi! Đáp án đúng: ${'ABCD'[item.answer]}`;
+    fb.textContent = `❌ Sai rồi! Đáp án đúng: ${'ABCD'[correctDisplayIndex]}`;
     fb.classList.add('bad');
   }
   const last = run.idx === run.order.length - 1;
@@ -1459,11 +2030,16 @@ function showRunResult() {
   const total = run.order.length;
   const pct = Math.round(run.score / total * 100);
   const msg = pct >= 80 ? '🏆 Xuất sắc!' : pct >= 50 ? '💪 Khá tốt!' : '📖 Cần ôn lại nhé!';
+  const petResult = q.rewardPets
+    ? `<p style="margin-top:8px">🐾 Bạn đã nhận được <strong>${run.pets.length}</strong> thú cưng!</p>
+       <p class="pet-collection">${run.pets.map(pet => pet.emoji).join(' ')}</p>`
+    : '';
   $('#quizCardArea').classList.add('hidden');
   $('#runResult').classList.remove('hidden');
   $('#runResult').innerHTML = `
     <h2>${msg}</h2>
     <p style="margin-top:6px">Bạn đúng <strong>${run.score}/${total}</strong> câu (${pct}%).</p>
+    ${petResult}
     <div class="study-actions">
       <button class="btn primary" data-ract="again">🔄 Làm lại</button>
       <button class="btn" data-ract="home">Về danh sách</button>
