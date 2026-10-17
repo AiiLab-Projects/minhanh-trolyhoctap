@@ -89,6 +89,7 @@
   .row-main { display: flex; flex-direction: column; gap: 2px; min-width: 150px; flex: 1; }
   .row-actions { display: flex; gap: 6px; flex-wrap: wrap; }
   .row-actions .btn { padding: 7px 11px; font-size: 13px; }
+  .wrong-answer-review { align-self: flex-start; }
   .muted { color: var(--muted); font-size: 13px; }
   .empty { text-align: center; color: var(--muted); padding: 18px 8px; font-size: 14px; }
   .editor-grid { display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px; margin-bottom: 14px; align-items: start; }
@@ -138,6 +139,20 @@
   .pet-reward-emoji { font-size: 36px; animation: pet-pop .35s ease-out; }
   .pet-collection { margin-top: 8px; color: var(--muted); font-size: 22px; letter-spacing: 3px; overflow-wrap: anywhere; }
   @keyframes pet-pop { from { transform: scale(.4) rotate(-15deg); } to { transform: scale(1) rotate(0); } }
+
+  /* ===== Trò chơi vượt chướng ngại vật ===== */
+  .game-scene { overflow: hidden; border: 1px solid var(--border); border-radius: 16px; background: var(--surface-2); }
+  #obstacleGameCanvas { display: block; width: 100%; height: 250px; touch-action: manipulation; }
+  .game-controls { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+  .game-question { margin-top: 16px; }
+  .game-question .run-question { font-size: 18px; font-weight: 600; line-height: 1.5; margin-bottom: 12px; }
+  .game-feedback { min-height: 24px; margin-top: 10px; font-weight: 600; }
+  .game-feedback.ok { color: var(--green); }
+  .game-feedback.bad { color: var(--red); }
+  @media (max-width: 560px) {
+    #obstacleGameCanvas { height: 210px; }
+    .game-controls > .btn { flex: 1 1 100%; }
+  }
 
   /* ===== Pomodoro ===== */
   .pomodoro-card { max-width: 520px; margin: 0 auto; text-align: center; }
@@ -457,6 +472,7 @@
   <button class="tab-btn" data-tab="tab-courses">📚 Môn học</button>
   <button class="tab-btn active" data-tab="tab-flashcards">🃏 Thẻ ghi nhớ</button>
   <button class="tab-btn" data-tab="tab-quiz">📝 Trắc nghiệm</button>
+  <button class="tab-btn" data-tab="tab-games">🎮 Trò chơi</button>
   <button class="tab-btn" data-tab="tab-exercises">✏️ Bài tập</button>
   <button class="tab-btn" data-tab="tab-pomodoro">⏱️ Pomodoro</button>
   <button class="tab-btn" data-tab="tab-todo">✅ Việc cần làm</button>
@@ -653,6 +669,14 @@
         </div>
       </div>
 
+      <div class="card">
+        <div class="card-head">
+          <h2>📌 Câu sai cần ôn lại <span id="wrongAnswersCount" class="muted"></span></h2>
+          <button id="clearWrongAnswersBtn" class="btn ghost hidden">Xóa danh sách</button>
+        </div>
+        <div id="wrongAnswersList" class="list"></div>
+      </div>
+
       <div id="quizEditor" class="card hidden">
         <div class="card-head">
           <h2 id="quizEditorTitle">Thêm câu hỏi</h2>
@@ -689,6 +713,48 @@
       </div>
 
       <div id="runResult" class="card hidden"></div>
+    </div>
+  </section>
+
+  <!-- ============ TRÒ CHƠI ============ -->
+  <section id="tab-games" class="tab-panel hidden">
+    <div class="page-hero hero-quiz">
+      <div class="page-hero-copy">
+        <span class="page-hero-kicker">Chạy, nhảy và thử sức</span>
+        <h2>Vượt chướng ngại vật</h2>
+        <p>Nhảy qua chướng ngại vật, trả lời câu hỏi để tiếp tục hành trình!</p>
+      </div>
+      <svg class="page-hero-art" viewBox="0 0 150 120" aria-hidden="true">
+        <circle class="art-disc" cx="77" cy="60" r="48" />
+        <ellipse cx="77" cy="102" rx="33" ry="6" fill="#584f87" opacity=".15" />
+        <path d="M32 87h88" stroke="#8671d4" stroke-linecap="round" stroke-width="5" />
+        <path d="m54 82 9-27 9 27m16 0 8-42 9 42" fill="#ff9a72" stroke="#fff" stroke-linejoin="round" stroke-width="4" />
+        <circle cx="63" cy="43" r="8" fill="#ffd578" />
+        <text class="art-spark" x="28" y="38" font-size="17">✦</text>
+        <text x="109" y="43" font-size="23">🏃</text>
+      </svg>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <h2>🏃 Cuộc đua kiến thức</h2>
+        <strong id="gameProgress" class="muted">Chặng 0/5 · Điểm 0</strong>
+      </div>
+      <p id="gameStatus" class="muted" aria-live="polite">Nhấn bắt đầu, dùng phím Space hoặc nút Nhảy để vượt chướng ngại vật. Mỗi lần vượt qua, hãy trả lời đúng một câu hỏi để đi tiếp.</p>
+      <div class="game-scene" style="margin-top:14px">
+        <canvas id="obstacleGameCanvas" aria-label="Đường chạy vượt chướng ngại vật"></canvas>
+      </div>
+      <div class="game-controls">
+        <button id="startGameBtn" class="btn primary big">▶ Bắt đầu chơi</button>
+        <button id="jumpGameBtn" class="btn success big" disabled>⬆ Nhảy (Space)</button>
+      </div>
+      <div id="gameQuestionCard" class="game-question card hidden" aria-live="polite">
+        <p id="gameQuestion" class="run-question"></p>
+        <div id="gameOptions" class="run-options"></div>
+        <p id="gameFeedback" class="game-feedback"></p>
+        <button id="retryGameQuestionBtn" class="btn hidden">↻ Thử lại câu hỏi</button>
+        <button id="continueGameBtn" class="btn primary hidden">Tiếp tục chạy ➡</button>
+      </div>
+      <div id="gameResult" class="card hidden"></div>
     </div>
   </section>
 
@@ -1038,6 +1104,7 @@ function load() {
 let store = load();
 if (!Array.isArray(store.decks))   store.decks = [];
 if (!Array.isArray(store.quizzes)) store.quizzes = [];
+if (!Array.isArray(store.wrongAnswers)) store.wrongAnswers = [];
 if (!Array.isArray(store.todos))   store.todos = [];
 if (!Array.isArray(store.courses)) store.courses = [];
 if (!Array.isArray(store.exercises)) store.exercises = [];
@@ -1096,8 +1163,14 @@ $('#themeBtn').addEventListener('click', () => {
 
 /* ================= Chuyển tab ================= */
 $$('.tab-btn').forEach(btn => btn.addEventListener('click', () => {
+  if (btn.dataset.tab !== 'tab-games' && typeof game !== 'undefined' && game.mode === 'running') pauseObstacleGame();
   $$('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
   $$('.tab-panel').forEach(p => p.classList.toggle('hidden', p.id !== btn.dataset.tab));
+  if (btn.dataset.tab === 'tab-games' && typeof game !== 'undefined' && game.mode === 'paused') {
+    game.mode = 'ready';
+    $('#gameStatus').textContent = 'Trò chơi đang tạm dừng. Nhấn Tiếp tục để quay lại đường chạy.';
+    $('#startGameBtn').textContent = '▶ Tiếp tục';
+  }
 }));
 
 /* ================= MÔN HỌC & TỆP BÀI HỌC ================= */
@@ -1830,6 +1903,48 @@ function renderQuizzes() {
   </div>`).join('');
 }
 
+function renderWrongAnswers() {
+  const list = $('#wrongAnswersList');
+  const entries = store.wrongAnswers;
+  $('#wrongAnswersCount').textContent = entries.length ? `(${entries.length})` : '';
+  $('#clearWrongAnswersBtn').classList.toggle('hidden', !entries.length);
+  if (!entries.length) {
+    list.innerHTML = '<div class="empty">Chưa có câu sai nào. Khi trả lời sai, câu hỏi sẽ được lưu tại đây để bạn ôn lại. 📖</div>';
+    return;
+  }
+  list.innerHTML = entries.map(entry => `<div class="row">
+    <div class="row-main">
+      <strong>${esc(entry.question)}</strong>
+      <span class="muted">${esc(entry.quizTitle)} · Sai ${entry.wrongCount} lần</span>
+      <span class="muted">Bạn chọn: ${esc(entry.chosenAnswer)} · Đáp án đúng: ${esc(entry.correctAnswer)}</span>
+    </div>
+    <div class="row-actions">
+      <button class="btn primary wrong-answer-review" data-wrong-act="review" data-id="${esc(entry.id)}">Ôn câu này</button>
+      <button class="btn ghost" data-wrong-act="remove" data-id="${esc(entry.id)}">Đã ôn · Xóa</button>
+    </div>
+  </div>`).join('');
+}
+
+$('#wrongAnswersList').addEventListener('click', e => {
+  const button = e.target.closest('[data-wrong-act]');
+  if (!button) return;
+  if (button.dataset.wrongAct === 'review') {
+    const entry = store.wrongAnswers.find(item => item.id === button.dataset.id);
+    if (!entry) return;
+    return startQuizRun(entry.quizId, entry.questionId);
+  }
+  store.wrongAnswers = store.wrongAnswers.filter(entry => entry.id !== button.dataset.id);
+  if (!save()) toast('Không thể lưu thay đổi. Hãy kiểm tra dung lượng lưu trữ của trình duyệt.');
+  renderWrongAnswers();
+});
+
+$('#clearWrongAnswersBtn').addEventListener('click', () => {
+  if (!store.wrongAnswers.length || !confirm('Xóa toàn bộ danh sách câu sai cần ôn lại?')) return;
+  store.wrongAnswers = [];
+  if (!save()) toast('Không thể lưu thay đổi. Hãy kiểm tra dung lượng lưu trữ của trình duyệt.');
+  renderWrongAnswers();
+});
+
 $('#quizList').addEventListener('click', e => {
   const b = e.target.closest('[data-act]');
   if (!b) return;
@@ -1940,17 +2055,21 @@ function renderQuizPetReward(newPet = null) {
     `Thú cưng đã nhận (${run.pets.length}): ${run.pets.slice(-12).map(pet => pet.emoji).join(' ')}`;
 }
 
-function startQuizRun(id) {
+function startQuizRun(id, reviewQuestionId = null) {
   const q = store.quizzes.find(x => x.id === id);
   if (!q) return;
   if (!q.questions.length) return toast('Bài này chưa có câu hỏi nào');
-  let order = q.questions.map(x => x.id);
-  if (q.shuffleQuestions || $('#shuffleQuizChk').checked) shuffleArr(order);
+  const reviewQuestion = reviewQuestionId
+    ? q.questions.find(item => item.id === reviewQuestionId)
+    : null;
+  if (reviewQuestionId && !reviewQuestion) return toast('Câu hỏi này không còn trong bài trắc nghiệm.');
+  let order = reviewQuestion ? [reviewQuestion.id] : q.questions.map(x => x.id);
+  if (!reviewQuestion && (q.shuffleQuestions || $('#shuffleQuizChk').checked)) shuffleArr(order);
   const optionOrders = Object.fromEntries(q.questions.map(item => {
     const indices = item.options.map((_, index) => index);
     return [item.id, q.shuffleOptions ? shuffleArr(indices) : indices];
   }));
-  run = { quizId: id, order, optionOrders, idx: 0, score: 0, answered: false, pets: [] };
+  run = { quizId: id, order, optionOrders, idx: 0, score: 0, answered: false, pets: [], reviewQuestionId };
   closeQuizEditor();
   $('#qzHome').classList.add('hidden');
   $('#qzRun').classList.remove('hidden');
@@ -2009,7 +2128,28 @@ $('#runOptions').addEventListener('click', e => {
     const correctDisplayIndex = optionOrder.indexOf(item.answer);
     const ok = buttons.find(btn => +btn.dataset.i === correctDisplayIndex);
     if (ok) ok.classList.add('correct');
-    fb.textContent = `❌ Sai rồi! Đáp án đúng: ${'ABCD'[correctDisplayIndex]}`;
+    const chosenAnswer = item.options[picked];
+    const correctAnswer = item.options[item.answer];
+    const wrongEntry = store.wrongAnswers.find(entry => entry.quizId === q.id && entry.questionId === item.id);
+    if (wrongEntry) {
+      wrongEntry.chosenAnswer = chosenAnswer;
+      wrongEntry.correctAnswer = correctAnswer;
+      wrongEntry.wrongCount = (Number(wrongEntry.wrongCount) || 0) + 1;
+    } else {
+      store.wrongAnswers.push({
+        id: uid(),
+        quizId: q.id,
+        quizTitle: q.title,
+        questionId: item.id,
+        question: item.q,
+        chosenAnswer,
+        correctAnswer,
+        wrongCount: 1
+      });
+    }
+    renderWrongAnswers();
+    if (!save()) toast('Không thể lưu câu sai. Hãy kiểm tra dung lượng lưu trữ của trình duyệt.');
+    fb.textContent = `❌ Sai rồi! Đáp án đúng: ${'ABCD'[correctDisplayIndex]} — đã thêm vào danh sách ôn lại.`;
     fb.classList.add('bad');
   }
   const last = run.idx === run.order.length - 1;
@@ -2041,7 +2181,7 @@ function showRunResult() {
     <p style="margin-top:6px">Bạn đúng <strong>${run.score}/${total}</strong> câu (${pct}%).</p>
     ${petResult}
     <div class="study-actions">
-      <button class="btn primary" data-ract="again">🔄 Làm lại</button>
+      <button class="btn primary" data-ract="again">${run.reviewQuestionId ? '🔄 Ôn lại câu này' : '🔄 Làm lại'}</button>
       <button class="btn" data-ract="home">Về danh sách</button>
     </div>`;
   $('#runProgress').textContent = 'Hoàn thành';
@@ -2049,7 +2189,7 @@ function showRunResult() {
 $('#runResult').addEventListener('click', e => {
   const b = e.target.closest('[data-ract]');
   if (!b || !run) return;
-  if (b.dataset.ract === 'again') startQuizRun(run.quizId);
+  if (b.dataset.ract === 'again') startQuizRun(run.quizId, run.reviewQuestionId);
   if (b.dataset.ract === 'home') exitQuizRun();
 });
 
@@ -2569,6 +2709,7 @@ applyTheme();
 renderCourses();
 renderDecks();
 renderQuizzes();
+renderWrongAnswers();
 renderTodos();
 updateTimerUI();
 </script>
