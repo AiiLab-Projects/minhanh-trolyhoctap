@@ -82,6 +82,8 @@
   .btn.big { font-size: 16px; padding: 12px 24px; }
 
   .list { display: flex; flex-direction: column; gap: 8px; }
+  .topic-review-card { margin: 0; }
+  .topic-question-list { margin-top: 12px; }
   .row {
     display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;
     border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; background: var(--surface-2);
@@ -469,6 +471,7 @@
 </header>
 
 <nav class="tabs">
+  <button class="tab-btn" data-tab="tab-question-bank">📚 Khối câu hỏi</button>
   <button class="tab-btn" data-tab="tab-courses">📚 Môn học</button>
   <button class="tab-btn active" data-tab="tab-flashcards">🃏 Thẻ ghi nhớ</button>
   <button class="tab-btn" data-tab="tab-quiz">📝 Trắc nghiệm</button>
@@ -714,6 +717,36 @@
 
       <div id="runResult" class="card hidden"></div>
     </div>
+  </section>
+
+  <!-- ============ KHỐI CÂU HỎI ============ -->
+  <section id="tab-question-bank" class="tab-panel hidden">
+    <div class="page-hero hero-quiz">
+      <div class="page-hero-copy">
+        <span class="page-hero-kicker">Kho câu hỏi của em</span>
+        <h2>Khối câu hỏi</h2>
+        <p>Chọn chủ đề môn học để làm trắc nghiệm từng câu và ôn lại câu hỏi.</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <h2>🗂️ Chủ đề ôn tập <span id="questionBankCount" class="muted"></span></h2>
+      </div>
+      <div id="courseTopicList" class="list"></div>
+    </div>
+    <div id="courseTopicRun" class="card hidden">
+      <h2>❓ Hỏi một câu</h2>
+      <div class="study-head">
+        <button id="exitCourseTopicRunBtn" class="btn ghost">← Chủ đề</button>
+        <strong id="courseTopicRunTitle"></strong>
+        <span id="courseTopicRunProgress" class="muted"></span>
+      </div>
+      <p id="courseTopicRunQuestion" class="run-question"></p>
+      <div id="courseTopicRunOptions" class="run-options"></div>
+      <p id="courseTopicRunFeedback" class="feedback" aria-live="polite"></p>
+      <button id="nextCourseTopicQuestionBtn" class="btn primary hidden">Câu tiếp theo ➡</button>
+    </div>
+    <div id="courseTopicRunResult" class="card hidden"></div>
   </section>
 
   <!-- ============ TRÒ CHƠI ============ -->
@@ -1166,6 +1199,7 @@ $$('.tab-btn').forEach(btn => btn.addEventListener('click', () => {
   if (btn.dataset.tab !== 'tab-games' && typeof game !== 'undefined' && game.mode === 'running') pauseObstacleGame();
   $$('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
   $$('.tab-panel').forEach(p => p.classList.toggle('hidden', p.id !== btn.dataset.tab));
+  if (btn.dataset.tab === 'tab-question-bank') renderQuestionBank();
   if (btn.dataset.tab === 'tab-games' && typeof game !== 'undefined' && game.mode === 'paused') {
     game.mode = 'ready';
     $('#gameStatus').textContent = 'Trò chơi đang tạm dừng. Nhấn Tiếp tục để quay lại đường chạy.';
@@ -1199,6 +1233,7 @@ function renderCourses() {
     files.innerHTML = '';
     $('#courseFileHint').textContent = 'Bài mẫu tham khảo theo chủ đề lớp 8; một số mục là nội dung tích hợp hoặc liên môn. Cách trình bày có thể khác theo bộ sách.';
     renderExercises();
+    renderQuestionBank();
     return;
   }
   $('#courseFileHint').textContent = 'Bài mẫu tham khảo theo chủ đề lớp 8; một số mục là nội dung tích hợp hoặc liên môn. Bạn cũng có thể gắn tệp TXT/Markdown tối đa 1 MB.';
@@ -1211,6 +1246,7 @@ function renderCourses() {
       </div>
     </div>`).join('') : '<div class="empty">Môn học chưa có bài. Thêm bài mẫu lớp 8, tự soạn câu hỏi hoặc gắn tệp TXT/Markdown.</div>';
   renderExercises();
+  renderQuestionBank();
 }
 
 function addCourse() {
@@ -1903,6 +1939,203 @@ function renderQuizzes() {
   </div>`).join('');
 }
 
+function getCourseTopicReviewQuestions(course) {
+  const lessonQuestions = course.files.flatMap(file =>
+    file.lessons
+      .filter(lesson =>
+        typeof lesson.question === 'string' && lesson.question.trim() &&
+        typeof lesson.content === 'string' && lesson.content.trim()
+      )
+      .map(lesson => ({ type: 'lesson', lesson, source: file.name }))
+  );
+  const quizQuestions = store.quizzes.flatMap(quiz => {
+    const matchesCourse = course.name === 'Tiếng Anh'
+      ? quiz.title === 'Tiếng Anh: Từ vựng qua câu mẫu'
+      : course.name === 'Toán'
+        ? quiz.title === 'Kiến thức chung (mẫu)'
+        : false;
+    if (!matchesCourse) return [];
+    return quiz.questions
+      .filter(question => course.name !== 'Toán' || /12\s*[×x]\s*8/.test(question.q))
+      .map(question => ({
+        type: 'multiple-choice',
+        prompt: question.q,
+        options: question.options,
+        answer: question.answer,
+        source: quiz.title
+      }));
+  });
+  return [...lessonQuestions, ...quizQuestions];
+}
+
+function renderQuestionBank() {
+  const topics = store.courses.map(course => ({
+    course,
+    questions: getCourseTopicReviewQuestions(course)
+  }));
+  const answerPool = [...new Set(store.courses.flatMap(course =>
+    course.files.flatMap(file => file.lessons
+      .map(lesson => typeof lesson.content === 'string' ? lesson.content.trim() : '')
+      .filter(Boolean)
+    )
+  ))];
+  const questionCount = topics.reduce((total, topic) => total + topic.questions.length, 0);
+  const availableTopics = topics.map(({ course, questions }) => {
+    const quizCount = questions.filter(question =>
+      question.type === 'multiple-choice' ||
+      answerPool.filter(answer => answer !== question.lesson.content.trim()).length >= 3
+    ).length;
+    return { course, questions, quizCount };
+  }).filter(topic => topic.questions.length);
+
+  $('#questionBankCount').textContent = `(${availableTopics.length} chủ đề · ${questionCount} câu hỏi)`;
+  $('#courseTopicList').innerHTML = availableTopics.length
+    ? availableTopics.map(({ course, questions, quizCount }) => `<div class="card topic-review-card">
+        <div class="card-head">
+          <div class="row-main">
+            <strong>${esc(course.name)}</strong>
+            <span class="muted">${questions.length} câu hỏi · ${quizCount} câu trắc nghiệm</span>
+          </div>
+          <button class="btn primary" data-topic-act="start" data-course-id="${esc(course.id)}" ${quizCount ? '' : 'disabled'}>Hỏi từng câu</button>
+        </div>
+        <div class="list topic-question-list">
+          ${questions.map((question, index) => `<div class="row">
+            <div class="row-main">
+              <strong>Câu ${index + 1}. ${esc(question.type === 'multiple-choice' ? question.prompt : question.lesson.question)}</strong>
+              <span class="muted">${question.type === 'multiple-choice' ? 'Trắc nghiệm' : 'Ôn tập'} · ${esc(question.source)}</span>
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>`).join('')
+    : '<div class="empty">Chưa có câu hỏi môn học. Thêm bài mẫu hoặc tự soạn câu hỏi trong mục Môn học.</div>';
+}
+
+$('#courseTopicList').addEventListener('click', e => {
+  const button = e.target.closest('[data-topic-act="start"]');
+  if (!button) return;
+  startCourseTopicQuiz(button.dataset.courseId);
+});
+let courseTopicRun = null;
+
+function getCourseTopicQuestions(courseId) {
+  const course = store.courses.find(item => item.id === courseId);
+  if (!course) return null;
+  const lessons = getCourseTopicReviewQuestions(course);
+  const answerPool = [...new Set(store.courses.flatMap(item =>
+    item.files.flatMap(sourceFile => sourceFile.lessons
+      .map(lesson => typeof lesson.content === 'string' ? lesson.content.trim() : '')
+      .filter(Boolean)
+    )
+  ))];
+  const questions = lessons.map(item => {
+    if (item.type === 'multiple-choice') {
+      return {
+        prompt: item.prompt,
+        source: item.source,
+        options: [...item.options],
+        answer: item.answer
+      };
+    }
+    const { lesson, source } = item;
+    const correctAnswer = lesson.content.trim();
+    const distractors = shuffleArr(answerPool.filter(answer => answer !== correctAnswer)).slice(0, 3);
+    if (distractors.length < 3) return null;
+    const options = shuffleArr([correctAnswer, ...distractors]);
+    return {
+      prompt: lesson.question.trim(),
+      source,
+      options,
+      answer: options.indexOf(correctAnswer)
+    };
+  }).filter(Boolean);
+  return { course, questions };
+}
+
+function startCourseTopicQuiz(courseId) {
+  const topic = getCourseTopicQuestions(courseId);
+  if (!topic) return toast('Không tìm thấy chủ đề môn học');
+  if (!topic.questions.length) {
+    return toast('Chủ đề này chưa có đủ câu hỏi và đáp án để tạo trắc nghiệm');
+  }
+  courseTopicRun = { ...topic, index: 0, score: 0, answered: false };
+  $('#courseTopicRunTitle').textContent = topic.course.name;
+  $('#courseTopicRunResult').classList.add('hidden');
+  $('#courseTopicList').closest('.card').classList.add('hidden');
+  $('#courseTopicRun').classList.remove('hidden');
+  renderCourseTopicQuestion();
+}
+
+function renderCourseTopicQuestion() {
+  if (!courseTopicRun) return;
+  const { questions, index, score } = courseTopicRun;
+  const question = questions[index];
+  $('#courseTopicRunProgress').textContent = `Câu ${index + 1}/${questions.length} · Đúng ${score}`;
+  $('#courseTopicRunQuestion').textContent = question.prompt;
+  $('#courseTopicRunOptions').innerHTML = question.options.map((option, optionIndex) =>
+    `<button class="run-option" data-topic-answer="${optionIndex}">${esc(option)}</button>`
+  ).join('');
+  $('#courseTopicRunFeedback').textContent = '';
+  $('#courseTopicRunFeedback').className = 'feedback';
+  $('#nextCourseTopicQuestionBtn').classList.add('hidden');
+  $('#nextCourseTopicQuestionBtn').textContent = index + 1 === questions.length ? 'Xem kết quả' : 'Câu tiếp theo ➡';
+}
+
+$('#courseTopicRunOptions').addEventListener('click', e => {
+  const button = e.target.closest('[data-topic-answer]');
+  if (!button || !courseTopicRun || courseTopicRun.answered) return;
+  const question = courseTopicRun.questions[courseTopicRun.index];
+  const selected = Number(button.dataset.topicAnswer);
+  courseTopicRun.answered = true;
+  $$('#courseTopicRunOptions .run-option').forEach((option, index) => {
+    option.disabled = true;
+    if (index === question.answer) option.classList.add('correct');
+    else if (index === selected) option.classList.add('wrong');
+  });
+  const feedback = $('#courseTopicRunFeedback');
+  if (selected === question.answer) {
+    courseTopicRun.score++;
+    feedback.textContent = 'Chính xác! 🎉';
+    feedback.classList.add('ok');
+  } else {
+    feedback.textContent = `Chưa đúng. Đáp án: ${question.options[question.answer]}`;
+    feedback.classList.add('bad');
+  }
+  $('#courseTopicRunProgress').textContent = `Câu ${courseTopicRun.index + 1}/${courseTopicRun.questions.length} · Đúng ${courseTopicRun.score}`;
+  $('#nextCourseTopicQuestionBtn').classList.remove('hidden');
+});
+
+$('#nextCourseTopicQuestionBtn').addEventListener('click', () => {
+  if (!courseTopicRun?.answered) return;
+  courseTopicRun.index++;
+  if (courseTopicRun.index < courseTopicRun.questions.length) {
+    courseTopicRun.answered = false;
+    renderCourseTopicQuestion();
+    return;
+  }
+  const { questions, score } = courseTopicRun;
+  $('#courseTopicRun').classList.add('hidden');
+  $('#courseTopicRunResult').innerHTML = `
+    <h2>Hoàn thành chủ đề! 🎉</h2>
+    <p class="muted">Bạn trả lời đúng ${score}/${questions.length} câu.</p>
+    <div class="row-actions" style="margin-top:14px">
+      <button id="retryCourseTopicQuizBtn" class="btn primary">Làm lại</button>
+      <button id="backToCourseTopicsBtn" class="btn">Về danh sách chủ đề</button>
+    </div>`;
+  $('#courseTopicRunResult').classList.remove('hidden');
+  $('#retryCourseTopicQuizBtn').addEventListener('click', () =>
+    startCourseTopicQuiz(courseTopicRun.course.id)
+  );
+  $('#backToCourseTopicsBtn').addEventListener('click', exitCourseTopicQuiz);
+});
+
+function exitCourseTopicQuiz() {
+  courseTopicRun = null;
+  $('#courseTopicRun').classList.add('hidden');
+  $('#courseTopicRunResult').classList.add('hidden');
+  $('#courseTopicList').closest('.card').classList.remove('hidden');
+}
+$('#exitCourseTopicRunBtn').addEventListener('click', exitCourseTopicQuiz);
+
 function renderWrongAnswers() {
   const list = $('#wrongAnswersList');
   const entries = store.wrongAnswers;
@@ -1956,7 +2189,7 @@ $('#quizList').addEventListener('click', e => {
     if (q && confirm(`Xóa bài "${q.title}"?`)) {
       store.quizzes = store.quizzes.filter(x => x.id !== id);
       if (editQuizId === id) closeQuizEditor();
-      save(); renderQuizzes(); toast('Đã xóa bài trắc nghiệm');
+      save(); renderQuizzes(); renderQuestionBank(); toast('Đã xóa bài trắc nghiệm');
     }
   }
 });
@@ -2009,7 +2242,7 @@ $('#questionList').addEventListener('click', e => {
   const q = store.quizzes.find(x => x.id === editQuizId);
   if (!q) return;
   q.questions.splice(+b.dataset.i, 1);
-  save(); renderQuestionList(); renderQuizzes();
+  save(); renderQuestionList(); renderQuizzes(); renderQuestionBank();
 });
 
 function addQuestion() {
@@ -2024,7 +2257,7 @@ function addQuestion() {
   $('#questionInput').value = '';
   [0, 1, 2, 3].forEach(i => $(`#opt${i}`).value = '');
   document.querySelector('input[name="correctOpt"][value="0"]').checked = true;
-  save(); renderQuestionList(); renderQuizzes();
+  save(); renderQuestionList(); renderQuizzes(); renderQuestionBank();
   $('#questionInput').focus();
   toast('Đã thêm câu hỏi');
 }
@@ -2709,6 +2942,7 @@ applyTheme();
 renderCourses();
 renderDecks();
 renderQuizzes();
+renderQuestionBank();
 renderWrongAnswers();
 renderTodos();
 updateTimerUI();
